@@ -1,0 +1,6 @@
+{
+  "name": "Apex Arcade - Win Go & Aviator",
+  "description": "Premium mobile arcade gaming platform featuring real-time synchronized Win Go 1Min and Aviator crash games with a shared virtual credit wallet.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
