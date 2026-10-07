@@ -90,6 +90,18 @@ async function startServer() {
     }
   }
 
+  httpServer.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      const fallbackPort = PORT + 1;
+      console.log(`[Server] Port ${PORT} already in use, switching to port ${fallbackPort}...`);
+      httpServer.listen(fallbackPort, '0.0.0.0', () => {
+        console.log(`[Server] Apex Arcade server listening on http://0.0.0.0:${fallbackPort}`);
+      });
+    } else {
+      console.error('[Server] HTTP server error:', err);
+    }
+  });
+
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`[Server] Apex Arcade server listening on http://0.0.0.0:${PORT}`);
   });
