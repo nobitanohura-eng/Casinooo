@@ -12,6 +12,7 @@ import LeadModal from '@/components/LeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import CsvImportModal from '@/components/CsvImportModal';
 import SendConfirmModal from '@/components/SendConfirmModal';
+import AiScoutModal from '@/components/AiScoutModal';
 import { Lead, DashboardMetrics, EmailDraft, FollowUp, ActivityLog, AppSettings } from '@/lib/types';
 
 export default function Home() {
@@ -60,6 +61,7 @@ export default function Home() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [sendModalLead, setSendModalLead] = useState<Lead | null>(null);
+  const [isAiScoutOpen, setIsAiScoutOpen] = useState(false);
 
   // Common API helper
   async function apiFetch(url: string, options?: RequestInit) {
@@ -466,6 +468,7 @@ export default function Home() {
               setEditingLead(null);
               setIsAddModalOpen(true);
             }}
+            onOpenAiScout={() => setIsAiScoutOpen(true)}
             onNavigateTab={setCurrentTab}
           />
         )}
@@ -488,6 +491,7 @@ export default function Home() {
               setIsAddModalOpen(true);
             }}
             onOpenImportModal={() => setIsImportModalOpen(true)}
+            onOpenAiScout={() => setIsAiScoutOpen(true)}
             onExportCsv={() => {
               window.open(
                 `/api/leads/export?status=${statusFilter}&category=${categoryFilter}`,
@@ -595,6 +599,12 @@ export default function Home() {
         onConfirmSend={handleSendEmail}
         busy={busy}
         globalPaused={settings?.global_email_paused}
+      />
+
+      <AiScoutModal
+        isOpen={isAiScoutOpen}
+        onClose={() => setIsAiScoutOpen(false)}
+        onSuccess={() => refreshAll()}
       />
     </div>
   );

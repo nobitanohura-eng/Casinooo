@@ -144,10 +144,87 @@
       "email_consent_status": "b2b_public_directory",
       "created_at": "2026-09-22T08:00:00.000Z",
       "updated_at": "2026-10-07T12:00:00.000Z"
+    },
+    {
+      "id": "lead_1791395749992_9v1qux3",
+      "optout_token": "token_1791395749992_lcks2m3",
+      "created_at": "2026-10-07T17:55:49.992Z",
+      "updated_at": "2026-10-07T17:55:49.992Z",
+      "company_name": "Apex Fasteners & Tools",
+      "contact_name": "Harish Rawat",
+      "category": "Auto components and machine shops",
+      "email": "orders@apexfastener.co.in",
+      "normalized_email": "orders@apexfastener.co.in",
+      "phone": "+91 9871 896 152",
+      "normalized_phone": "9871896152",
+      "address": "Plot 32, Sector 83",
+      "city": "Noida",
+      "source": "🤖 AI Lead Scout",
+      "source_notes": "Auto-discovered via AI Delhi NCR Logistics Agent",
+      "vehicle_requirement": "Tata Ace Gold (Chota Hathi)",
+      "route_area": "Noida Sector 63 to Gandhi Nagar Delhi",
+      "frequency": "3 times a week",
+      "status": "ready_for_review",
+      "priority": "high",
+      "notes": "AI Scout: Discovered B2B logistics demand for Small machine parts, metal fasteners and precision components in crates. Dedicated Tata Ace required for Noida Sector 63 to Gandhi Nagar Delhi.",
+      "estimated_value": 20500,
+      "actual_revenue": 0,
+      "email_consent_status": "b2b_public_directory"
+    },
+    {
+      "id": "lead_1791395750001_d3in0r4",
+      "optout_token": "token_1791395750001_vohrd1j",
+      "created_at": "2026-10-07T17:55:50.001Z",
+      "updated_at": "2026-10-07T17:55:50.001Z",
+      "company_name": "Haldiram Direct Beverages",
+      "contact_name": "Kailash Chand",
+      "category": "FMCG and packaged food distributors",
+      "email": "dispatch@haldiramdire.com",
+      "normalized_email": "dispatch@haldiramdire.com",
+      "phone": "+91 9717 826 772",
+      "normalized_phone": "9717826772",
+      "address": "Plot 145, Sector 10",
+      "city": "Noida",
+      "source": "🤖 AI Lead Scout",
+      "source_notes": "Auto-discovered via AI Delhi NCR Logistics Agent",
+      "vehicle_requirement": "Tata Ace Gold (Chota Hathi)",
+      "route_area": "Noida Sector 63 to Gandhi Nagar Delhi",
+      "frequency": "Daily early morning",
+      "status": "ready_for_review",
+      "priority": "high",
+      "notes": "AI Scout: Discovered B2B logistics demand for Packaged sweets, namkeen and snack cartons for retail delivery. Dedicated Tata Ace required for Noida Sector 63 to Gandhi Nagar Delhi.",
+      "estimated_value": 41500,
+      "actual_revenue": 0,
+      "email_consent_status": "b2b_public_directory"
     }
   ],
   "suppressions": [],
-  "email_drafts": [],
+  "email_drafts": [
+    {
+      "id": "lead_1791395749995_yg8jbh4",
+      "optout_token": "token_1791395749995_lk9vhx9",
+      "created_at": "2026-10-07T17:55:49.995Z",
+      "updated_at": "2026-10-07T17:55:49.995Z",
+      "lead_id": "lead_1791395749992_9v1qux3",
+      "recipient_email": "orders@apexfastener.co.in",
+      "template_id": "tata_ace_hinglish",
+      "subject": "Local Delivery Gaddi Requirement — Apex Fasteners & Tools",
+      "body": "Namaste Harish Rawat ji,\n\nHum Noida area mein local factory aur warehouse delivery ke liye Tata Ace Gold (Chota Hathi) transport service provide karte hain.\n\nAgar aapko cartons, packaging material ya local dispatch ke liye regular ya trip-basis gaddi ki requirement rehti ho, to kripya batayein.\n\nHum aapke route aur transport rates discuss karne ke liye uplabdh hain.\n\nDhanyawaad,\nPapa Transport Services\nNoida\n\n---\nAgar aapko dobara email nahi chahiye, to yahan unsubscribe karein: http://localhost:3000/api/optout/token_1791395749992_lcks2m3",
+      "status": "draft"
+    },
+    {
+      "id": "lead_1791395750001_pslqdhz",
+      "optout_token": "token_1791395750001_tr8xkth",
+      "created_at": "2026-10-07T17:55:50.001Z",
+      "updated_at": "2026-10-07T17:55:50.001Z",
+      "lead_id": "lead_1791395750001_d3in0r4",
+      "recipient_email": "dispatch@haldiramdire.com",
+      "template_id": "tata_ace_hinglish",
+      "subject": "Local Delivery Gaddi Requirement — Haldiram Direct Beverages",
+      "body": "Namaste Kailash Chand ji,\n\nHum Noida area mein local factory aur warehouse delivery ke liye Tata Ace Gold (Chota Hathi) transport service provide karte hain.\n\nAgar aapko cartons, packaging material ya local dispatch ke liye regular ya trip-basis gaddi ki requirement rehti ho, to kripya batayein.\n\nHum aapke route aur transport rates discuss karne ke liye uplabdh hain.\n\nDhanyawaad,\nPapa Transport Services\nNoida\n\n---\nAgar aapko dobara email nahi chahiye, to yahan unsubscribe karein: http://localhost:3000/api/optout/token_1791395750001_vohrd1j",
+      "status": "draft"
+    }
+  ],
   "send_attempts": [],
   "email_events": [],
   "follow_ups": [
@@ -168,6 +245,28 @@
       "status": "pending",
       "type": "phone_call",
       "created_at": "2026-10-06T11:00:00.000Z"
+    },
+    {
+      "id": "lead_1791395750001_l1v9sie",
+      "optout_token": "token_1791395750001_7ko0t62",
+      "created_at": "2026-10-07T17:55:50.001Z",
+      "updated_at": "2026-10-07T17:55:50.001Z",
+      "lead_id": "lead_1791395749992_9v1qux3",
+      "scheduled_for": "2026-10-08T17:55:50.001Z",
+      "note": "Call Harish Rawat regarding Tata Ace transport rates for Noida Sector 63 to Gandhi Nagar Delhi.",
+      "status": "pending",
+      "type": "phone_call"
+    },
+    {
+      "id": "lead_1791395750012_7u8jti7",
+      "optout_token": "token_1791395750012_o9y7c1r",
+      "created_at": "2026-10-07T17:55:50.012Z",
+      "updated_at": "2026-10-07T17:55:50.012Z",
+      "lead_id": "lead_1791395750001_d3in0r4",
+      "scheduled_for": "2026-10-08T17:55:50.012Z",
+      "note": "Call Kailash Chand regarding Tata Ace transport rates for Noida Sector 63 to Gandhi Nagar Delhi.",
+      "status": "pending",
+      "type": "phone_call"
     }
   ],
   "activity_logs": [
@@ -189,6 +288,38 @@
         "note": "Monthly settlement received from Aggarwal Sweets"
       },
       "created_at": "2026-10-04T12:00:00.000Z"
+    },
+    {
+      "id": "lead_1791395750001_a8rptmz",
+      "optout_token": "token_1791395750001_wgdxl3o",
+      "created_at": "2026-10-07T17:55:50.001Z",
+      "updated_at": "2026-10-07T17:55:50.001Z",
+      "lead_id": "lead_1791395749992_9v1qux3",
+      "action": "ai_lead_scouted",
+      "description": "Discovered B2B transport lead Apex Fasteners & Tools in Noida for Noida Sector 63 to Gandhi Nagar Delhi",
+      "actor": "🤖 AI Scout Agent",
+      "metadata": {
+        "company": "Apex Fasteners & Tools",
+        "route": "Noida Sector 63 to Gandhi Nagar Delhi",
+        "estimated_value": 20500,
+        "agent": "Papa AI Scout v1.0"
+      }
+    },
+    {
+      "id": "lead_1791395750013_m3x40uf",
+      "optout_token": "token_1791395750013_l498f3q",
+      "created_at": "2026-10-07T17:55:50.013Z",
+      "updated_at": "2026-10-07T17:55:50.013Z",
+      "lead_id": "lead_1791395750001_d3in0r4",
+      "action": "ai_lead_scouted",
+      "description": "Discovered B2B transport lead Haldiram Direct Beverages in Noida for Noida Sector 63 to Gandhi Nagar Delhi",
+      "actor": "🤖 AI Scout Agent",
+      "metadata": {
+        "company": "Haldiram Direct Beverages",
+        "route": "Noida Sector 63 to Gandhi Nagar Delhi",
+        "estimated_value": 41500,
+        "agent": "Papa AI Scout v1.0"
+      }
     }
   ],
   "app_settings": [

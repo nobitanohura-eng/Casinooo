@@ -13,6 +13,7 @@ export function middleware(request: NextRequest) {
     '/login',
     '/auth/callback',
     '/api/auth',
+    '/api/health',
     '/api/optout',
     '/unsubscribe',
     '/api/webhooks/resend',
@@ -23,6 +24,9 @@ export function middleware(request: NextRequest) {
   const user = sessionCookie ? verifySessionToken(sessionCookie) : null;
 
   if (!user && !isPublic) {
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

@@ -18,6 +18,7 @@ import {
   Square,
   AlertCircle,
   Trash2,
+  Sparkles,
 } from 'lucide-react';
 import { Lead, LEAD_CATEGORIES, LEAD_STATUSES } from '@/lib/types';
 
@@ -35,6 +36,7 @@ interface LeadsTabProps {
   onSelectLead: (lead: Lead) => void;
   onOpenAddModal: () => void;
   onOpenImportModal: () => void;
+  onOpenAiScout?: () => void;
   onExportCsv: () => void;
   onBulkAction: (action: string, leadIds: string[], status?: string) => Promise<void>;
   busy: boolean;
@@ -54,6 +56,7 @@ export default function LeadsTab({
   onSelectLead,
   onOpenAddModal,
   onOpenImportModal,
+  onOpenAiScout,
   onExportCsv,
   onBulkAction,
   busy,
@@ -113,6 +116,16 @@ export default function LeadsTab({
             <Upload size={15} />
             <span>Import CSV</span>
           </button>
+
+          {onOpenAiScout && (
+            <button
+              onClick={onOpenAiScout}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-[0.98]"
+            >
+              <Sparkles size={15} />
+              <span>Auto-Find (AI)</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenAddModal}

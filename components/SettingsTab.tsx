@@ -15,6 +15,8 @@ import {
   RefreshCw,
   CheckCircle2,
   ExternalLink,
+  Sparkles,
+  Bot,
 } from 'lucide-react';
 import { AppSettings } from '@/lib/types';
 
@@ -214,6 +216,32 @@ export default function SettingsTab({
               <span className={`font-bold ${resendInfo.configured ? 'text-emerald-600' : 'text-amber-600'}`}>
                 {resendInfo.configured ? 'Yes (Server-side)' : 'Pending environment setup'}
               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Autonomous Lead Scout Configuration */}
+        <div className="bg-white border border-[#e7ebf2] rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="font-bold text-sm text-[#172033] flex items-center gap-2">
+            <Bot size={16} className="text-indigo-600" />
+            <span>AI Autonomous Lead Scout</span>
+          </div>
+          <p className="text-xs text-slate-500">
+            Autonomous agent that researches and auto-generates verified Delhi NCR B2B leads needing Tata Ace freight transit.
+          </p>
+
+          <div className="p-3 bg-slate-50 rounded-xl text-xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Scout Engine:</span>
+              <strong className="text-slate-800">Delhi NCR Logistics Hub Engine (40+ clusters)</strong>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">LLM Mode:</span>
+              <span className="font-bold text-emerald-600">OpenAI / Gemini Ready + Built-in Fallback</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Autonomous Actions:</span>
+              <span className="text-slate-700">Deduplication + Auto-Draft + Follow-up schedule</span>
             </div>
           </div>
         </div>
