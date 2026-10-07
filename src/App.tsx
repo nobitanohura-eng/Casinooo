@@ -25,6 +25,10 @@ import {
 import { AppHeader } from './components/layout/AppHeader.tsx';
 import { BottomNav, NavTab } from './components/layout/BottomNav.tsx';
 import { GameModule } from './components/layout/GameSelector.tsx';
+import { Lottery7Lobby } from './components/lottery7/Lottery7Lobby.tsx';
+import { Lottery7BottomNav } from './components/lottery7/Lottery7BottomNav.tsx';
+import { WinGoView } from './components/wingo/WinGoView.tsx';
+import { WithdrawModal } from './components/wallet/WithdrawModal.tsx';
 import { LobbyHero } from './components/lobby/LobbyHero.tsx';
 import { CategoryRibbon } from './components/lobby/CategoryRibbon.tsx';
 import { RichGameCards } from './components/lobby/RichGameCards.tsx';
@@ -109,7 +113,7 @@ export default function App() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
 
   const [activeTab, setActiveTab] = useState<NavTab>('home');
-  const [activeGame, setActiveGame] = useState<GameModule>('wingo');
+  const [activeGame, setActiveGame] = useState<GameModule>('lobby');
 
   const activeTabRef = useRef<NavTab>(activeTab);
   activeTabRef.current = activeTab;
@@ -118,6 +122,7 @@ export default function App() {
 
   // Modals
   const [isTopUpOpen, setIsTopUpOpen] = useState<boolean>(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState<boolean>(false);
   const [isTelegramOpen, setIsTelegramOpen] = useState<boolean>(false);
   const [isLuckyWheelOpen, setIsLuckyWheelOpen] = useState<boolean>(false);
   const [isDepositBonusOpen, setIsDepositBonusOpen] = useState<boolean>(() => {
@@ -521,6 +526,13 @@ export default function App() {
             </span>
 
             <button
+              onClick={() => setActiveGame('lobby')}
+              className="px-2.5 py-0.5 rounded-full bg-[#1e2024] hover:bg-[#282a2e] text-slate-300 hover:text-white font-medium text-[10px] transition-colors"
+            >
+              🏛️ Lottery 7 Lobby
+            </button>
+
+            <button
               onClick={() => setActiveGame('wingo')}
               className="px-2.5 py-0.5 rounded-full bg-[#1e2024] hover:bg-[#282a2e] text-slate-400 hover:text-slate-200 font-medium text-[10px] transition-colors"
             >
@@ -631,6 +643,8 @@ export default function App() {
     );
   }
 
+  const isLobbyView = activeTab === 'home' && activeGame === 'lobby';
+
   return (
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#060a12] text-slate-100 flex justify-center overscroll-none select-none">
       {/* Desktop Left Ambient Column (PokerStars / BetWright style) */}
@@ -685,8 +699,8 @@ export default function App() {
       </div>
 
       {/* Main Centered Mobile Gaming Shell (strictly locked to max-w-md and 100dvh) */}
-      <div className="w-full max-w-md h-[100dvh] max-h-[100dvh] bg-[#070b14] border-x border-slate-700/60 flex flex-col relative shadow-2xl overflow-hidden overscroll-none select-none">
-        {/* Scoped Toast Alert (Positioned at top-14 directly below header, never obscuring canvas flight curve or cashout button) */}
+      <div className={`w-full max-w-md h-[100dvh] max-h-[100dvh] ${isLobbyView ? 'bg-[#f7f8ff] text-[#1e2637] border-x border-slate-200' : 'bg-[#070b14] border-x border-slate-700/60 text-slate-100'} flex flex-col relative shadow-2xl overflow-hidden overscroll-none select-none`}>
+        {/* Scoped Toast Alert */}
         {toast && (
           <div
             className={`fixed top-14 left-1/2 -translate-x-1/2 z-50 px-3.5 py-1.5 rounded-full text-xs font-casino-num font-black shadow-2xl border transition-all animate-in fade-in slide-in-from-top-2 duration-200 max-w-[90%] text-center pointer-events-none backdrop-blur-md ${
@@ -701,84 +715,72 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. Integrated Header with Online Status, Balance, Sound & Language Toggle */}
-        <AppHeader
-          balance={balance}
-          isConnected={isConnected}
-          onOpenTopUp={() => setIsTopUpOpen(true)}
-          onOpenAccount={() => setActiveTab('account')}
-          onOpenTelegramVIP={() => setIsTelegramOpen(true)}
-          onSecretOperatorTrigger={() => setIsOperatorOpen(true)}
-          accountId={accountId}
-        />
+        {/* 1. Integrated Header for Non-Lobby Views */}
+        {!isLobbyView && activeGame !== 'wingo' && (
+          <>
+            <AppHeader
+              balance={balance}
+              isConnected={isConnected}
+              onOpenTopUp={() => setIsTopUpOpen(true)}
+              onOpenAccount={() => setActiveTab('account')}
+              onOpenTelegramVIP={() => setIsTelegramOpen(true)}
+              onSecretOperatorTrigger={() => setIsOperatorOpen(true)}
+              accountId={accountId}
+            />
 
-        {/* 2. Native "Install APK" Top Banner with ₹50 Free Bonus */}
-        <InstallApkBanner
-          onBonusClaimed={(bonus) => {
-            handleTopUp(bonus);
-            setVictoryData({
-              isOpen: true,
-              amount: bonus,
-              game: 'Win Go 1Min',
-              details: 'Official Android APK Installation Bonus',
-            });
-          }}
-        />
+            <InstallApkBanner
+              onBonusClaimed={(bonus) => {
+                handleTopUp(bonus);
+                setVictoryData({
+                  isOpen: true,
+                  amount: bonus,
+                  game: 'Win Go 1Min',
+                  details: 'Official Android APK Installation Bonus',
+                });
+              }}
+            />
+          </>
+        )}
 
-        {/* 3. Content Area */}
+        {/* 2. Content Area */}
         <main className="flex-1 overflow-y-auto overscroll-none touch-pan-y">
           {activeTab === 'home' && (
-            <div className="space-y-3 pb-4">
-              {/* 1. Indian Lottery Hero Banner (100% First Deposit Bonus + Quick Action Cards) */}
-              <LobbyHero
-                onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
-                onOpenCheckIn={() => setActiveTab('activity')}
-                onOpenDepositBonus={() => setIsDepositBonusOpen(true)}
-              />
+            <>
+              {activeGame === 'lobby' && (
+                <Lottery7Lobby
+                  balance={balance}
+                  onRefreshBalance={refreshUserData}
+                  onOpenDeposit={() => setIsTopUpOpen(true)}
+                  onOpenWithdraw={() => setIsWithdrawOpen(true)}
+                  onSelectGame={(g) => setActiveGame(g)}
+                  winGoStatusText={`#${String(winGoState.periodNumber).slice(-4)} · ${winGoState.remainingSeconds}s`}
+                  aviatorStatusText={
+                    aviatorState.status === 'FLYING'
+                      ? `${aviatorState.currentMultiplier.toFixed(2)}x`
+                      : aviatorState.status === 'BETTING'
+                      ? `Takeoff in ${aviatorState.bettingCountdownSeconds}s`
+                      : 'Flew Away'
+                  }
+                  onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
+                  onOpenDepositBonus={() => setIsDepositBonusOpen(true)}
+                  onOpenTelegram={() => setIsTelegramOpen(true)}
+                  onOpenSupport={() => setIsTelegramOpen(true)}
+                />
+              )}
 
-              {/* 2. Category Taxonomy Ribbon */}
-              <CategoryRibbon
-                activeGame={activeGame}
-                onSelectGame={setActiveGame}
-              />
-
-              {/* 3. Rich 3D Game Cards (Bursting balls & climbing red aircraft) */}
-              <RichGameCards
-                activeGame={activeGame}
-                onSelectGame={setActiveGame}
-                winGoStatusText={`#${String(winGoState.periodNumber).slice(-4)} · ${winGoState.remainingSeconds}s`}
-                aviatorStatusText={
-                  aviatorState.status === 'FLYING'
-                    ? `${aviatorState.currentMultiplier.toFixed(2)}x`
-                    : aviatorState.status === 'BETTING'
-                    ? `Takeoff in ${aviatorState.bettingCountdownSeconds}s`
-                    : 'Flew Away'
-                }
-              />
-
-              {/* 4. Active Game Board */}
-              <div className="pt-1">
-                {activeGame === 'wingo' ? (
-                  <WinGoGame
-                    state={winGoState}
-                    walletBalance={balance}
-                    accountId={accountId}
-                    myBets={winGoBets}
-                    history={winGoHistory}
-                    onRefreshData={refreshUserData}
-                  />
-                ) : (
-                  <AviatorGame
-                    state={aviatorState}
-                    walletBalance={balance}
-                    accountId={accountId}
-                    myBets={aviatorBets}
-                    history={aviatorHistory}
-                    onRefreshData={refreshUserData}
-                  />
-                )}
-              </div>
-            </div>
+              {activeGame === 'wingo' && (
+                <WinGoView
+                  state={winGoState}
+                  walletBalance={balance}
+                  accountId={accountId}
+                  myBets={winGoBets}
+                  history={winGoHistory}
+                  onRefreshData={refreshUserData}
+                  onBackToLobby={() => setActiveGame('lobby')}
+                  onOpenDeposit={() => setIsTopUpOpen(true)}
+                />
+              )}
+            </>
           )}
 
           {activeTab === 'activity' && (
@@ -822,17 +824,28 @@ export default function App() {
           )}
         </main>
 
-        {/* 4. Bottom Navigation with Center Elevated Lucky Wheel Tab */}
-        <BottomNav
+        {/* 3. Official Lottery 7 Bottom Navigation Bar */}
+        <Lottery7BottomNav
           activeTab={activeTab}
-          onChangeTab={setActiveTab}
+          onChangeTab={(tab) => {
+            setActiveTab(tab);
+            if (tab === 'home') {
+              setActiveGame('lobby');
+            }
+          }}
+          onSelectLobby={() => {
+            setActiveTab('home');
+            setActiveGame('lobby');
+          }}
           onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
         />
 
-        {/* 5. Fixed Floating Customer Support Bubble on Bottom-Right */}
-        <CustomerSupportBubble onOpenTelegram={() => setIsTelegramOpen(true)} />
+        {/* 4. Customer Support Bubble on Secondary Views */}
+        {!isLobbyView && (
+          <CustomerSupportBubble onOpenTelegram={() => setIsTelegramOpen(true)} />
+        )}
 
-        {/* 6. Global Modals */}
+        {/* 5. Global Modals */}
         <TopUpModal
           isOpen={isTopUpOpen}
           onClose={() => setIsTopUpOpen(false)}
@@ -841,26 +854,33 @@ export default function App() {
           onRefreshData={refreshUserData}
         />
 
+        <WithdrawModal
+          isOpen={isWithdrawOpen}
+          onClose={() => setIsWithdrawOpen(false)}
+          walletBalance={balance}
+          accountId={accountId}
+          totalDeposited={account?.total_deposited || 1000}
+          totalWagered={account?.total_wagered || 0}
+          onRefreshData={refreshUserData}
+        />
+
         <TelegramVipModal
           isOpen={isTelegramOpen}
           onClose={() => setIsTelegramOpen(false)}
         />
 
-        {/* 100% Deposit Bonus Welcome Modal */}
         <DepositBonusModal
           isOpen={isDepositBonusOpen}
           onClose={handleCloseDepositBonus}
           onRecharge={() => setIsTopUpOpen(true)}
         />
 
-        {/* Interactive Lucky Wheel of Fortune Modal */}
         <LuckyWheelModal
           isOpen={isLuckyWheelOpen}
           onClose={() => setIsLuckyWheelOpen(false)}
           onBonusWon={handleBonusWon}
         />
 
-        {/* Energetic Victory Celebration Modal on Win or Cash-Out */}
         <VictoryModal
           isOpen={victoryData.isOpen}
           onClose={() => setVictoryData((prev) => ({ ...prev, isOpen: false }))}

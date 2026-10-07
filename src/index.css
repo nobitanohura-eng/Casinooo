@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./styles/spribe-aviator.css";
+@import "./styles/lottery7.css";
 
 @layer base {
   :root {

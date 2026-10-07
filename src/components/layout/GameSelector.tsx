@@ -3,7 +3,7 @@ import { Sparkles, Plane } from 'lucide-react';
 import { soundManager } from '../../lib/sound.ts';
 import { useTranslation } from '../../lib/i18n.ts';
 
-export type GameModule = 'wingo' | 'aviator';
+export type GameModule = 'lobby' | 'wingo' | 'aviator';
 
 interface GameSelectorProps {
   activeGame: GameModule;

@@ -1,0 +1,782 @@
+/* ==========================================================================
+   LOTTERY7 OFFICIAL DESIGN SYSTEM & STYLES
+   Pixel-accurate reproduction based on lottery7.full-page.Woblo
+   ========================================================================== */
+
+:root {
+  --l7-primary-red: #f95959;
+  --l7-secondary-red: #d93025;
+  --l7-gradient-red: linear-gradient(90deg, #f95959 0%, #ff7979 100%);
+  --l7-btn-red: linear-gradient(135deg, #f95959 0%, #fa3a3a 100%);
+  --l7-gold: #ffbe3f;
+  --l7-bg-main: #f7f8ff;
+  --l7-bg-card: #ffffff;
+  --l7-border-color: #ebedf0;
+  --l7-text-dark: #333333;
+  --l7-text-gray: #768096;
+  --l7-text-light: #acafb7;
+  --l7-amount-red: #f95959;
+  --l7-amount-green: #28a745;
+}
+
+/* Base Body Shell for Lottery7 Mode */
+.lottery7-root {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Roboto", "Inter", sans-serif;
+  background-color: var(--l7-bg-main);
+  color: var(--l7-text-dark);
+  min-height: 100vh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   1. TOP NAVBAR
+   ========================================================================== */
+.l7-navbar {
+  height: 48px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.l7-logo {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.l7-logo img {
+  height: 26px;
+  width: auto;
+  object-fit: contain;
+}
+
+.l7-brand-text {
+  font-weight: 900;
+  font-size: 16px;
+  color: #f95959;
+  letter-spacing: -0.5px;
+  font-style: italic;
+}
+
+.l7-brand-badge {
+  background: #f95959;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-style: normal;
+}
+
+.l7-nav-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--l7-text-gray);
+}
+
+.l7-download-icon {
+  width: 22px;
+  height: 22px;
+  color: #f95959;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   2. BANNER CAROUSEL
+   ========================================================================== */
+.l7-banner-container {
+  padding: 8px 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.l7-banner-img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   3. MARQUEE ANNOUNCEMENT BAR
+   ========================================================================== */
+.l7-marquee-bar {
+  margin: 0 12px 10px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  font-size: 12px;
+}
+
+.l7-speaker-icon {
+  width: 16px;
+  height: 16px;
+  color: #f95959;
+  flex-shrink: 0;
+}
+
+.l7-marquee-content {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--l7-text-gray);
+  font-size: 11px;
+}
+
+.l7-detail-btn {
+  background: var(--l7-btn-red);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   4. WALLET BALANCE CARD
+   ========================================================================== */
+.l7-wallet-card {
+  margin: 0 12px 12px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.l7-balance-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.l7-balance-label {
+  font-size: 11px;
+  color: var(--l7-text-gray);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.l7-balance-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #333333;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.l7-refresh-icon {
+  width: 14px;
+  height: 14px;
+  color: #acafb7;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.l7-refresh-icon:active {
+  transform: rotate(180deg);
+}
+
+.l7-wallet-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.l7-btn-withdraw {
+  border: 1px solid #ffbe3f;
+  background: #ffffff;
+  color: #fa8c16;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.l7-btn-withdraw:hover {
+  background: #fffbe6;
+}
+
+.l7-btn-deposit {
+  background: var(--l7-btn-red);
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(249, 89, 89, 0.35);
+  transition: all 0.15s ease;
+}
+
+.l7-btn-deposit:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   5. CATEGORY NAVIGATION (Row 1: Top 3 Cards, Row 2: Bottom 5 Tabs)
+   ========================================================================== */
+.l7-cat-section {
+  margin: 0 12px 14px;
+}
+
+.l7-cat-top-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.l7-cat-card-top {
+  border-radius: 12px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.l7-cat-card-top:active {
+  transform: scale(0.96);
+}
+
+.l7-cat-card-top.popular {
+  background: linear-gradient(180deg, #4da9ff 0%, #2f86f6 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(47, 134, 246, 0.25);
+}
+
+.l7-cat-card-top.lottery {
+  background: linear-gradient(180deg, #ff9436 0%, #f76813 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(247, 104, 19, 0.25);
+}
+
+.l7-cat-card-top.minigames {
+  background: linear-gradient(180deg, #b04bf6 0%, #8928db 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(137, 40, 219, 0.25);
+}
+
+.l7-cat-card-top img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.l7-cat-card-top span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+/* Bottom 5 Icon Tabs */
+.l7-cat-bottom-row {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px 6px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.l7-cat-item-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 2px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.l7-cat-item-bottom:active {
+  background: #f7f8ff;
+}
+
+.l7-cat-item-bottom img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.l7-cat-item-bottom span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--l7-text-gray);
+}
+
+/* ==========================================================================
+   6. FLOATING RIGHT ACTION BADGES
+   ========================================================================== */
+.l7-floating-badges {
+  position: fixed;
+  right: 8px;
+  top: 35%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 50;
+}
+
+.l7-float-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.l7-float-badge:active {
+  transform: scale(0.92);
+}
+
+.l7-float-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   7. GAME SHELVES / POPULAR / LOTTERY SECTIONS
+   ========================================================================== */
+.l7-section-container {
+  margin: 0 12px 14px;
+}
+
+.l7-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.l7-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #333333;
+}
+
+.l7-section-title svg,
+.l7-section-title span.badge {
+  color: #f95959;
+}
+
+.l7-section-more {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--l7-text-light);
+  cursor: pointer;
+}
+
+.l7-section-arrows {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.l7-arrow-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #ebedf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--l7-text-light);
+  background: #ffffff;
+}
+
+/* Games Grid */
+.l7-games-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  position: relative;
+}
+
+.l7-games-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.l7-game-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.l7-game-card:active {
+  transform: scale(0.97);
+}
+
+.l7-game-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.l7-add-desktop-floating {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #f95959 0%, #ff7979 100%);
+  color: #ffffff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(249, 89, 89, 0.5);
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* ==========================================================================
+   8. WINNING INFORMATION TABLE (Live Rolling Feed)
+   ========================================================================== */
+.l7-winning-card {
+  margin: 0 12px 14px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.l7-table-header {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  padding-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--l7-text-gray);
+  border-bottom: 1px solid #f2f3f5;
+}
+
+.l7-table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  align-items: center;
+  padding: 7px 0;
+  font-size: 11px;
+  border-bottom: 1px solid #f9f9fa;
+  animation: l7-fade-in 0.3s ease;
+}
+
+.l7-table-game {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #333333;
+  font-weight: 600;
+}
+
+.l7-game-tag-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(249, 89, 89, 0.15);
+  color: #f95959;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  flex-shrink: 0;
+}
+
+.l7-table-user {
+  color: var(--l7-text-gray);
+  font-family: monospace;
+  font-size: 10.5px;
+}
+
+.l7-table-amount {
+  color: #f95959;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes l7-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   9. TODAY'S EARNINGS CHART (Podium 1, 2, 3 + Ranks 4-10)
+   ========================================================================== */
+.l7-earnings-card {
+  margin: 0 12px 24px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.l7-podium-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 0 16px;
+  position: relative;
+}
+
+.l7-podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.l7-podium-avatar-wrapper {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.l7-podium-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.l7-podium-item.first .l7-podium-avatar {
+  width: 58px;
+  height: 58px;
+  border: 3px solid #ffbe3f;
+}
+
+.l7-podium-crown {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+}
+
+.l7-podium-badge {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.l7-podium-item.first .l7-podium-badge {
+  background: #f95959;
+}
+
+.l7-podium-item.second .l7-podium-badge {
+  background: #ff9436;
+}
+
+.l7-podium-item.third .l7-podium-badge {
+  background: #ffbe3f;
+}
+
+.l7-podium-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #333333;
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+.l7-podium-amount {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #f95959;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.l7-ranks-list {
+  border-top: 1px solid #f2f3f5;
+  padding-top: 6px;
+}
+
+.l7-rank-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  font-size: 11.5px;
+  border-bottom: 1px solid #f9f9fa;
+}
+
+.l7-rank-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.l7-rank-pos {
+  width: 18px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--l7-text-light);
+  font-size: 12px;
+}
+
+.l7-rank-user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.l7-rank-user-name {
+  color: var(--l7-text-dark);
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.l7-rank-amount {
+  color: #f95959;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   10. BOTTOM NAVIGATION BAR
+   ========================================================================== */
+.l7-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 56px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid #ebedf0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  padding: 0 4px;
+}
+
+.l7-nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  color: var(--l7-text-light);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  position: relative;
+}
+
+.l7-nav-tab.active {
+  color: #f95959;
+}
+
+.l7-nav-tab svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Center Elevated Red Game Controller Button */
+.l7-center-tab {
+  position: relative;
+  top: -12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.l7-center-red-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f95959 0%, #ff7979 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(249, 89, 89, 0.45);
+  border: 2px solid #ffffff;
+}
+
+.l7-center-red-btn svg {
+  width: 24px;
+  height: 24px;
+}
