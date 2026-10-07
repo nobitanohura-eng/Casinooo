@@ -10,8 +10,8 @@ export class WalletService {
     return db.getAccount(accountId);
   }
 
-  public static async getOrCreateAccount(accountId: string, mobile?: string): Promise<Account> {
-    return db.getOrCreateAccount(accountId, mobile);
+  public static async getOrCreateAccount(accountId: string, mobile?: string, initialBalance = 0.0): Promise<Account> {
+    return db.getOrCreateAccount(accountId, mobile, initialBalance);
   }
 
   /**

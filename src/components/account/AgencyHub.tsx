@@ -28,6 +28,7 @@ export const AgencyHub: React.FC<AgencyHubProps> = ({ accountId, onRefreshData }
   const [claimMessage, setClaimMessage] = useState<string | null>(null);
 
   const fetchAgencySummary = async () => {
+    if (!accountId) return;
     try {
       const res = await fetch(`/api/agency/summary?accountId=${encodeURIComponent(accountId)}`);
       const data = await res.json();

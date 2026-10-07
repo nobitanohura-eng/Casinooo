@@ -365,7 +365,7 @@ class DatabaseManager {
     return Array.from(this.accounts.values()).map((a) => ({ ...a }));
   }
 
-  public getOrCreateAccount(accountId: string, mobile?: string): Account {
+  public getOrCreateAccount(accountId: string, mobile?: string, initialBalance = 0.0): Account {
     let acc = this.accounts.get(accountId);
     if (!acc) {
       const now = new Date().toISOString();
@@ -373,10 +373,10 @@ class DatabaseManager {
       acc = {
         id: accountId,
         mobile: mobile || `+91 9${Math.floor(100000000 + Math.random() * 900000000)}`,
-        wallet_balance: 1000.0,
+        wallet_balance: initialBalance,
         is_demo: false,
         is_banned: false,
-        total_deposited: 1000.0,
+        total_deposited: initialBalance,
         total_wagered: 0.0,
         total_won: 0.0,
         referred_by: 'acc_demo_pilot_01',
@@ -394,15 +394,17 @@ class DatabaseManager {
       };
       this.accounts.set(accountId, acc);
 
-      this.recordLedgerEntryDirect({
-        account_id: accountId,
-        type: 'TOPUP',
-        amount: 1000.0,
-        closing_balance: 1000.0,
-        reference_id: 'WELCOME_BONUS',
-        idempotency_key: 'idem_init_' + accountId,
-        metadata: { reason: 'Initial Welcome Bonus' },
-      });
+      if (initialBalance > 0) {
+        this.recordLedgerEntryDirect({
+          account_id: accountId,
+          type: 'TOPUP',
+          amount: initialBalance,
+          closing_balance: initialBalance,
+          reference_id: 'WELCOME_BONUS',
+          idempotency_key: 'idem_init_' + accountId,
+          metadata: { reason: 'Initial Welcome Bonus' },
+        });
+      }
     }
     return { ...acc };
   }
@@ -452,10 +454,10 @@ class DatabaseManager {
       id: newId,
       mobile: formattedMobile,
       password_hash: passwordHash,
-      wallet_balance: 100.0, // Welcome gift ₹100
+      wallet_balance: 25.0, // Welcome gift ₹25
       is_demo: false,
       is_banned: false,
-      total_deposited: 100.0,
+      total_deposited: 25.0,
       total_wagered: 0.0,
       total_won: 0.0,
       referred_by: referredById,
@@ -477,8 +479,8 @@ class DatabaseManager {
     this.recordLedgerEntryDirect({
       account_id: newId,
       type: 'TOPUP',
-      amount: 100.0,
-      closing_balance: 100.0,
+      amount: 25.0,
+      closing_balance: 25.0,
       reference_id: 'WELCOME_BONUS',
       idempotency_key: 'idem_signup_bonus_' + newId,
       metadata: { reason: 'Welcome Gift Bonus' },
@@ -486,6 +488,7 @@ class DatabaseManager {
 
     return { success: true, account: { ...newAccount } };
   }
+
 
   public setAccountBanned(accountId: string, banned: boolean, operatorIp: string): { success: boolean; error?: string } {
     const acc = this.accounts.get(accountId);

@@ -23,6 +23,7 @@ interface WinGoGameProps {
   myBets: WinGoBet[];
   history: WinGoRoundSummary[];
   onRefreshData: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
 }
 
 export const WinGoGame: React.FC<WinGoGameProps> = ({
@@ -32,6 +33,7 @@ export const WinGoGame: React.FC<WinGoGameProps> = ({
   myBets,
   history,
   onRefreshData,
+  onOpenAuth,
 }) => {
   const { t } = useTranslation();
   const [selectedDrawer, setSelectedDrawer] = useState<{
@@ -62,6 +64,10 @@ export const WinGoGame: React.FC<WinGoGameProps> = ({
     selectionValue: WinGoSelectionValue;
     stakeAmount: number;
   }): Promise<{ success: boolean; error?: string }> => {
+    if (!accountId) {
+      if (onOpenAuth) onOpenAuth('login');
+      return { success: false, error: 'Please log in to place real bets.' };
+    }
     const socket = getSocket();
     const idempotencyKey = `wgb_${accountId}_${state.roundId}_${Date.now()}`;
 

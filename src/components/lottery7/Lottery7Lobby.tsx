@@ -7,9 +7,12 @@ import { Lottery7EarningsChart } from './Lottery7EarningsChart.tsx';
 
 interface Lottery7LobbyProps {
   balance: number;
+  isLoggedIn?: boolean;
+  userMobile?: string;
   onRefreshBalance: () => void;
   onOpenDeposit: () => void;
   onOpenWithdraw: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
   onSelectGame: (game: 'aviator' | 'wingo') => void;
   winGoStatusText?: string;
   aviatorStatusText?: string;
@@ -25,9 +28,12 @@ interface Lottery7LobbyProps {
 
 export const Lottery7Lobby: React.FC<Lottery7LobbyProps> = ({
   balance,
+  isLoggedIn = false,
+  userMobile,
   onRefreshBalance,
   onOpenDeposit,
   onOpenWithdraw,
+  onOpenAuth,
   onSelectGame,
   winGoStatusText,
   aviatorStatusText,
@@ -47,9 +53,12 @@ export const Lottery7Lobby: React.FC<Lottery7LobbyProps> = ({
       {/* 1. Official Header (Navbar, Slider, Marquee, Balance Card, Category Grid) */}
       <Lottery7Header
         balance={balance}
+        isLoggedIn={isLoggedIn}
+        userMobile={userMobile}
         onRefreshBalance={onRefreshBalance}
         onOpenDeposit={onOpenDeposit}
         onOpenWithdraw={onOpenWithdraw}
+        onOpenAuth={onOpenAuth}
         activeCategory={activeCategory}
         onSelectCategory={setActiveCategory}
         onOpenLuckyWheel={onOpenLuckyWheel}

@@ -53,6 +53,7 @@ import { AddToDesktopModal } from './components/common/AddToDesktopModal.tsx';
 import { LuckyWheelModal } from './components/common/LuckyWheelModal.tsx';
 import { CustomerSupportBubble } from './components/common/CustomerSupportBubble.tsx';
 import { AuthModal } from './components/common/AuthModal.tsx';
+import { AuthPage } from './components/auth/AuthPage.tsx';
 import { GullakModal } from './components/common/GullakModal.tsx';
 import { LifelineSpinModal } from './components/common/LifelineSpinModal.tsx';
 
@@ -122,12 +123,32 @@ export default function App() {
   }, []);
 
   const [accountId, setAccountId] = useState<string>(() => {
-    return localStorage.getItem('apex_arcade_account_id') || 'acc_demo_pilot_01';
+    return localStorage.getItem('apex_arcade_account_id') || '';
   });
 
   const [account, setAccount] = useState<Account | null>(null);
-  const [balance, setBalance] = useState<number>(1000.0);
+  const [balance, setBalance] = useState<number>(0.0);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+
+  const [isAuthPageOpen, setIsAuthPageOpen] = useState<boolean>(false);
+  const [authPageMode, setAuthPageMode] = useState<'login' | 'register'>('login');
+
+  const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
+    setAuthPageMode(mode);
+    setIsAuthPageOpen(true);
+  };
+
+  const handleAuthSuccess = (newAccount: Account, token: string) => {
+    setAccount(newAccount);
+    setAccountId(newAccount.id);
+    setBalance(newAccount.wallet_balance);
+    localStorage.setItem('apex_auth_token', token);
+    localStorage.setItem('apex_arcade_account_id', newAccount.id);
+    setIsAuthPageOpen(false);
+    setIsAuthOpen(false);
+    showToast(`Welcome back, ${newAccount.mobile || 'Player'}!`, 'success');
+    refreshUserData();
+  };
 
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeGame, setActiveGame] = useState<GameModule>('lobby');
@@ -264,6 +285,13 @@ export default function App() {
   };
 
   const refreshUserData = useCallback(async () => {
+    if (!accountId) {
+      setBalance(0);
+      setLedger([]);
+      setWinGoBets([]);
+      setAviatorBets([]);
+      return;
+    }
     try {
       const summary = await fetchWalletSummary(accountId);
       setBalance(summary.wallet_balance);
@@ -300,12 +328,14 @@ export default function App() {
   const handleLogout = async () => {
     await logoutUser();
     showToast('Logged out of session.', 'info');
-    setAccountId('acc_demo_pilot_01');
-    localStorage.setItem('apex_arcade_account_id', 'acc_demo_pilot_01');
-    fetchSession('acc_demo_pilot_01').then((acc) => {
-      setAccount(acc);
-      setBalance(acc.wallet_balance);
-    });
+    setAccountId('');
+    setAccount(null);
+    setBalance(0);
+    localStorage.removeItem('apex_arcade_account_id');
+    localStorage.removeItem('apex_auth_token');
+    localStorage.removeItem('apex_account_id');
+    setActiveTab('home');
+    setActiveGame('lobby');
   };
 
   useEffect(() => {
@@ -316,17 +346,33 @@ export default function App() {
         setBalance(authUser.wallet_balance);
         localStorage.setItem('apex_arcade_account_id', authUser.id);
       } else {
-        localStorage.setItem('apex_arcade_account_id', accountId);
-        fetchSession(accountId)
-          .then((acc) => {
-            setAccount(acc);
-            setBalance(acc.wallet_balance);
-          })
-          .catch((err) => console.error('Failed to init session:', err));
+        const savedId = localStorage.getItem('apex_arcade_account_id');
+        const token = localStorage.getItem('apex_auth_token');
+        if (savedId && token) {
+          fetchSession(savedId)
+            .then((acc) => {
+              setAccount(acc);
+              setBalance(acc.wallet_balance);
+            })
+            .catch(() => {
+              setAccount(null);
+              setBalance(0);
+              setAccountId('');
+              localStorage.removeItem('apex_arcade_account_id');
+              localStorage.removeItem('apex_auth_token');
+            });
+        } else {
+          setAccount(null);
+          setBalance(0);
+          setAccountId('');
+          localStorage.removeItem('apex_arcade_account_id');
+        }
       }
     });
 
-    refreshUserData();
+    if (accountId) {
+      refreshUserData();
+    }
     refreshGameStates();
   }, [accountId, refreshUserData, refreshGameStates]);
 
@@ -370,7 +416,9 @@ export default function App() {
     });
 
     socket.on('wingo:round:locked', (data: any) => {
-      soundManager.play('lock');
+      if (activeTabRef.current === 'home' && activeGameRef.current === 'wingo') {
+        soundManager.play('lock');
+      }
       setWinGoState((prev) => ({
         ...prev,
         status: 'LOCKED',
@@ -437,19 +485,20 @@ export default function App() {
     });
 
     socket.on('aviator:crash', (data: any) => {
-      soundManager.play('crash');
       setAviatorState((prev) => ({
         ...prev,
         status: 'CRASHED',
         crashMultiplier: data.crashMultiplier,
       }));
-      // Suppress toast completely whenever the user is NOT actively on the Aviator tab
+      // Only play crash audio and show toast when the user is actively in the Aviator game
       if (activeTabRef.current === 'home' && activeGameRef.current === 'aviator') {
+        soundManager.play('crash');
         showToast(`Aviator flew away @ ${data.crashMultiplier.toFixed(2)}x`, 'error');
       }
       refreshUserData();
       fetchAviatorHistory().then(setAviatorHistory);
     });
+
 
     // Authoritative Wallet Settlement with Victory Modal Trigger
     socket.on('wallet:updated', (data: any) => {
@@ -545,6 +594,20 @@ export default function App() {
   }
 
 
+  // Full-Page Dedicated Login & Register View Matching Apex Coral Lobby
+  if (isAuthPageOpen) {
+    return (
+      <div className="h-[100dvh] max-h-[100dvh] overflow-y-auto bg-[#f7f8ff] flex justify-center items-center select-none">
+        <AuthPage
+          initialMode={authPageMode}
+          onAuthSuccess={handleAuthSuccess}
+          onBackToHome={() => setIsAuthPageOpen(false)}
+          onOpenSupport={() => setIsTelegramOpen(true)}
+        />
+      </div>
+    );
+  }
+
   // 1. DEDICATED FULL-FIDELITY SPRIBE AVIATOR GAME EXPERIENCE
   if (activeTab === 'home' && activeGame === 'aviator') {
     return (
@@ -567,9 +630,15 @@ export default function App() {
         {/* Official Spribe Aviator Header */}
         <SpribeHeader
           balance={balance}
-          accountId={accountId}
+          accountId={accountId || 'Guest'}
           avatarId={avatarId}
-          onOpenDeposit={() => setIsTopUpOpen(true)}
+          onOpenDeposit={() => {
+            if (!account) {
+              handleOpenAuth('login');
+            } else {
+              setIsTopUpOpen(true);
+            }
+          }}
           onOpenAvatarPicker={() => setIsAvatarPickerOpen(true)}
           onOpenHowToPlay={() => setIsHowToPlayOpen(true)}
           onOpenProvablyFair={() => setIsProvablyFairOpen(true)}
@@ -577,10 +646,7 @@ export default function App() {
           onOpenBetHistory={() => setActiveTab('activity')}
           onOpenGameLimits={() => setIsGameLimitsOpen(true)}
           onOpenFreeBets={() => setIsLuckyWheelOpen(true)}
-          onOpenLoginModal={() => {
-            setAuthModalMode('login');
-            setIsAuthOpen(true);
-          }}
+          onOpenLoginModal={() => handleOpenAuth('login')}
         />
 
 
@@ -632,9 +698,15 @@ export default function App() {
             accountId={accountId}
             myBets={aviatorBets}
             history={aviatorHistory}
-            onRefreshData={refreshUserData}
-            onOpenDeposit={() => setIsTopUpOpen(true)}
+            onOpenDeposit={() => {
+              if (!account) {
+                handleOpenAuth('login');
+              } else {
+                setIsTopUpOpen(true);
+              }
+            }}
             onSwitchAccount={handleSwitchAccount}
+            onOpenAuth={handleOpenAuth}
           />
         </main>
 
@@ -737,7 +809,7 @@ export default function App() {
                 Instant UPI Banking
               </span>
               <p className="text-slate-300 font-medium mt-0.5 leading-relaxed">
-                Automated credit faucet with sub-second balance settlement.
+                Instant UPI credit settlement with sub-second balance updates.
               </p>
             </div>
 
@@ -800,7 +872,9 @@ export default function App() {
                 : activeTab === 'wallet'
                 ? 'Wallet & Banking'
                 : activeTab === 'account'
-                ? 'VIP Pilot Profile'
+                ? account
+                  ? 'VIP Member Profile'
+                  : 'Guest Profile'
                 : 'Apex Arcade'
             }
             onBackToHome={() => {
@@ -808,7 +882,7 @@ export default function App() {
               setActiveGame('lobby');
             }}
             balance={balance}
-            onOpenDeposit={() => setIsTopUpOpen(true)}
+            onOpenDeposit={() => (!account ? handleOpenAuth('login') : setIsTopUpOpen(true))}
             onRefreshBalance={refreshUserData}
           />
         )}
@@ -820,9 +894,12 @@ export default function App() {
               {activeGame === 'lobby' && (
                 <Lottery7Lobby
                   balance={balance}
+                  isLoggedIn={!!account}
+                  userMobile={account?.mobile}
                   onRefreshBalance={refreshUserData}
-                  onOpenDeposit={() => setIsTopUpOpen(true)}
-                  onOpenWithdraw={() => setIsWithdrawOpen(true)}
+                  onOpenDeposit={() => (!account ? handleOpenAuth('login') : setIsTopUpOpen(true))}
+                  onOpenWithdraw={() => (!account ? handleOpenAuth('login') : setIsWithdrawOpen(true))}
+                  onOpenAuth={handleOpenAuth}
                   onSelectGame={(g) => setActiveGame(g)}
                   winGoStatusText={`#${String(winGoState.periodNumber).slice(-4)} · ${winGoState.remainingSeconds}s`}
                   aviatorStatusText={
@@ -858,7 +935,8 @@ export default function App() {
                   history={winGoHistory}
                   onRefreshData={refreshUserData}
                   onBackToLobby={() => setActiveGame('lobby')}
-                  onOpenDeposit={() => setIsTopUpOpen(true)}
+                  onOpenDeposit={() => (!account ? handleOpenAuth('login') : setIsTopUpOpen(true))}
+                  onOpenAuth={handleOpenAuth}
                 />
               )}
             </>
@@ -883,10 +961,11 @@ export default function App() {
                 balance={balance}
                 ledger={ledger}
                 accountId={accountId}
-                totalDeposited={account?.total_deposited || 1000}
+                totalDeposited={account?.total_deposited || 0}
                 totalWagered={account?.total_wagered || 0}
                 onTopUp={handleTopUp}
                 onRefreshData={refreshUserData}
+                onOpenAuth={handleOpenAuth}
               />
             </div>
           )}
@@ -903,12 +982,13 @@ export default function App() {
                 account={account}
                 balance={balance}
                 onRefreshData={refreshUserData}
-                onOpenDeposit={() => setIsTopUpOpen(true)}
-                onOpenWithdraw={() => setIsWithdrawOpen(true)}
+                onOpenDeposit={() => (!account ? handleOpenAuth('login') : setIsTopUpOpen(true))}
+                onOpenWithdraw={() => (!account ? handleOpenAuth('login') : setIsWithdrawOpen(true))}
                 onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
                 onOpenTelegram={() => setIsTelegramOpen(true)}
                 onOpenSupport={() => setIsTelegramOpen(true)}
                 onOpenGullak={() => setIsGullakOpen(true)}
+                onOpenAuth={handleOpenAuth}
                 onLogout={handleLogout}
                 onSwitchAccount={handleSwitchAccount}
                 onNavigateTab={(tab) => {
@@ -1112,7 +1192,7 @@ export default function App() {
         </div>
 
         <div className="text-[10px] text-slate-500 font-casino-num text-center">
-          Apex Mobile Arcade · INR Sandbox Engine
+          Apex Mobile Arcade · Official India Gaming Edition
         </div>
       </div>
     </div>

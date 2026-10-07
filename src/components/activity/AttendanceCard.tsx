@@ -32,6 +32,7 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({ accountId, onRef
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
 
   const fetchAttendance = async () => {
+    if (!accountId) return;
     try {
       const res = await fetch(`/api/attendance?accountId=${encodeURIComponent(accountId)}`);
       const data = await res.json();

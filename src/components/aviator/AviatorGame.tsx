@@ -24,6 +24,7 @@ interface AviatorGameProps {
   onRefreshData: () => void;
   onOpenDeposit?: () => void;
   onSwitchAccount?: (newId: string) => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
 }
 
 interface SimulatedMultiplayerBet {
@@ -45,6 +46,7 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
   onRefreshData,
   onOpenDeposit,
   onSwitchAccount,
+  onOpenAuth,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -158,6 +160,12 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
   const currentRoundBet = myBets.find((b) => b.round_id === state.roundId) || null;
 
   const handlePlaceBet = async (stake: number, autoCashout?: number) => {
+    if (!accountId) {
+      setErrorMessage('Please log in with your phone number to place real bets.');
+      if (onOpenAuth) onOpenAuth('login');
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 

@@ -33,6 +33,7 @@ interface AccountViewProps {
   onOpenGullak?: () => void;
   onOpenTelegram?: () => void;
   onOpenSupport?: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
   onLogout?: () => void;
   onSwitchAccount?: (id: string) => void;
   onNavigateTab?: (tab: any) => void;
@@ -40,7 +41,7 @@ interface AccountViewProps {
 
 export const AccountView: React.FC<AccountViewProps> = ({
   account,
-  balance = 1000,
+  balance = 0,
   onRefreshData,
   onOpenDeposit,
   onOpenWithdraw,
@@ -48,6 +49,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
   onOpenGullak,
   onOpenTelegram,
   onOpenSupport,
+  onOpenAuth,
   onLogout,
   onSwitchAccount,
   onNavigateTab,
@@ -74,7 +76,121 @@ export const AccountView: React.FC<AccountViewProps> = ({
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  if (!account) return null;
+  if (!account) {
+    return (
+      <div className="space-y-3 px-3 pt-3 pb-24 text-slate-800 select-none">
+        {/* Guest Profile Banner */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#f95959] via-[#fa6c6c] to-[#ff8579] p-4 text-white shadow-md relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
+
+          <div className="flex items-center gap-3.5 relative z-10">
+            <div className="relative w-14 h-14 rounded-2xl bg-white/20 border-2 border-white flex items-center justify-center shadow-md">
+              <User className="w-8 h-8 text-white stroke-[2.2]" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="font-casino-num font-black text-white text-base leading-tight truncate">
+                  Guest Visitor
+                </h2>
+                <span className="bg-white/20 text-white font-casino-num font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                  Unverified
+                </span>
+              </div>
+              <p className="text-xs text-white/90 mt-1 leading-snug">
+                Log in with your Indian phone number to access instant UPI deposits, 24/7 withdrawals & VIP rank rewards.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-4 relative z-10">
+            <button
+              onClick={() => onOpenAuth ? onOpenAuth('login') : onOpenDeposit?.()}
+              className="py-2.5 px-3 rounded-xl bg-white text-[#f95959] font-bold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Smartphone className="w-4 h-4" />
+              <span>Log In</span>
+            </button>
+            <button
+              onClick={() => onOpenAuth ? onOpenAuth('register') : onOpenDeposit?.()}
+              className="py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-4 h-4 text-slate-900" />
+              <span>Register (+₹25)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Feature Overview Card */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+          <div className="flex items-center gap-2 text-slate-900 font-bold text-xs uppercase tracking-wide">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>Official India Arcade Guarantee</span>
+          </div>
+
+          <div className="space-y-2 text-xs text-slate-600">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <span className="font-medium">⚡ Instant UPI Banking</span>
+              <span className="font-bold text-emerald-600">Zero Fees</span>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <span className="font-medium">🎲 Certified Fair Games</span>
+              <span className="font-bold text-slate-700">Win Go & Aviator</span>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <span className="font-medium">🎁 New Player Welcome Gift</span>
+              <span className="font-bold text-amber-600">₹25 Free Credit</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Audio Preferences Toggle */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
+              </div>
+              <div>
+                <span className="font-bold text-slate-900 text-xs block">Audio Effects</span>
+                <span className="text-[10px] text-[#768096] block">Haptic feedback & game audio</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleToggleSound}
+              className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                soundEnabled ? 'bg-emerald-500' : 'bg-slate-300'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                soundEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Customer Support CTA */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#f95959] to-[#ff7979] text-white flex items-center justify-center font-bold shadow-sm">
+              <Headphones className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-bold text-slate-900 text-xs block">24/7 VIP Customer Service</span>
+              <span className="text-[10px] text-[#768096] block">Direct live Telegram representative</span>
+            </div>
+          </div>
+          <button
+            onClick={onOpenTelegram || onOpenSupport}
+            className="px-3 py-1.5 rounded-lg bg-[#f95959] text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+          >
+            Connect
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 px-3 pt-3 pb-24 text-slate-800 select-none">

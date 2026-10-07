@@ -17,7 +17,7 @@ interface ActivityViewProps {
 export const ActivityView: React.FC<ActivityViewProps> = ({
   wingoBets,
   aviatorBets,
-  accountId = 'acc_demo_pilot_01',
+  accountId = '',
   onRefreshData,
   onOpenDepositBonus,
   onOpenLuckyWheel,

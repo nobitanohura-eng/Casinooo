@@ -4,9 +4,12 @@ import { formatINR } from '../../lib/formatters.ts';
 
 interface Lottery7HeaderProps {
   balance: number;
+  isLoggedIn?: boolean;
+  userMobile?: string;
   onRefreshBalance: () => void;
   onOpenDeposit: () => void;
   onOpenWithdraw: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
   activeCategory: string;
   onSelectCategory: (cat: string) => void;
   onOpenLuckyWheel: () => void;
@@ -16,9 +19,12 @@ interface Lottery7HeaderProps {
 
 export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
   balance,
+  isLoggedIn = false,
+  userMobile,
   onRefreshBalance,
   onOpenDeposit,
   onOpenWithdraw,
+  onOpenAuth,
   activeCategory,
   onSelectCategory,
   onOpenLuckyWheel,
@@ -55,16 +61,38 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
           </div>
         </div>
 
-        <div className="l7-nav-action">
-          <button
-            onClick={onOpenApkModal}
-            className="p-1 rounded-full hover:bg-slate-100 transition-colors flex items-center gap-1 text-[#f95959]"
-            title="Download Android App"
-            aria-label="Download Android App"
-          >
-            <Download className="w-5 h-5 text-[#f95959]" />
-            <span className="text-[10px] font-bold hidden sm:inline">APP</span>
-          </button>
+        <div className="l7-nav-action flex items-center gap-2">
+          {!isLoggedIn ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => (onOpenAuth ? onOpenAuth('login') : onOpenDeposit())}
+                className="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors shadow-xs active:scale-95"
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => (onOpenAuth ? onOpenAuth('register') : onOpenDeposit())}
+                className="px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-[#f95959] to-[#ff7979] shadow-sm hover:brightness-105 transition-all active:scale-95"
+              >
+                Register
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-500 font-bold hidden sm:inline">
+                {userMobile ? userMobile.slice(0, 6) + '***' : 'Member'}
+              </span>
+              <button
+                onClick={onOpenApkModal}
+                className="p-1 rounded-full hover:bg-slate-100 transition-colors flex items-center gap-1 text-[#f95959]"
+                title="Download Android App"
+                aria-label="Download Android App"
+              >
+                <Download className="w-5 h-5 text-[#f95959]" />
+                <span className="text-[10px] font-bold hidden sm:inline">APP</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -104,11 +132,21 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
       {/* 4. Wallet Balance Card */}
       <div className="l7-wallet-card">
         <div className="l7-balance-info">
-          <span className="l7-balance-label">
-            <span>Main balance</span>
+          <span className="l7-balance-label flex items-center gap-1.5">
+            {isLoggedIn ? (
+              <span>Main balance</span>
+            ) : (
+              <>
+                <span className="w-2 h-2 rounded-full bg-slate-300" />
+                <span>Guest Account</span>
+                <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full">
+                  Tap to Login
+                </span>
+              </>
+            )}
           </span>
           <div className="l7-balance-amount">
-            <span>{formatINR(balance)}</span>
+            <span>{isLoggedIn ? formatINR(balance) : '₹0.00'}</span>
             <button
               onClick={handleRefresh}
               className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
@@ -121,12 +159,31 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
         </div>
 
         <div className="l7-wallet-actions">
-          <button onClick={onOpenWithdraw} className="l7-btn-withdraw active:scale-95 transition-transform">
-            Withdraw
-          </button>
-          <button onClick={onOpenDeposit} className="l7-btn-deposit active:scale-95 transition-transform">
-            Deposit
-          </button>
+          {isLoggedIn ? (
+            <>
+              <button onClick={onOpenWithdraw} className="l7-btn-withdraw active:scale-95 transition-transform">
+                Withdraw
+              </button>
+              <button onClick={onOpenDeposit} className="l7-btn-deposit active:scale-95 transition-transform">
+                Deposit
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => (onOpenAuth ? onOpenAuth('login') : onOpenWithdraw())}
+                className="l7-btn-withdraw active:scale-95 transition-transform"
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => (onOpenAuth ? onOpenAuth('register') : onOpenDeposit())}
+                className="l7-btn-deposit active:scale-95 transition-transform"
+              >
+                Register
+              </button>
+            </>
+          )}
         </div>
       </div>
 

@@ -10,14 +10,14 @@ interface LuckyWheelModalProps {
 }
 
 const PRIZES = [
-  { id: 1, amount: 50, label: '₹50 Cash', color: '#8b5cf6' },
-  { id: 2, amount: 200, label: '₹200 Bounty', color: '#ec4899' },
-  { id: 3, amount: 100, label: '₹100 Bonus', color: '#f59e0b' },
-  { id: 4, amount: 500, label: '₹500 VIP Win', color: '#10b981' },
-  { id: 5, amount: 75, label: '₹75 Cash', color: '#06b6d4' },
-  { id: 6, amount: 1000, label: '₹1,000 MEGA', color: '#e11d48' },
-  { id: 7, amount: 150, label: '₹150 Credit', color: '#3b82f6' },
-  { id: 8, amount: 2500, label: '₹2,500 JACKPOT', color: '#eab308' },
+  { id: 1, amount: 1, label: '₹1 Cash', color: '#10b981' },
+  { id: 2, amount: 2, label: '₹2 Bonus', color: '#3b82f6' },
+  { id: 3, amount: 5, label: '₹5 VIP Cash', color: '#8b5cf6' },
+  { id: 4, amount: 10, label: '₹10 Lucky', color: '#f59e0b' },
+  { id: 5, amount: 2, label: '₹2 Reward', color: '#06b6d4' },
+  { id: 6, amount: 20, label: '₹20 Mega', color: '#e11d48' },
+  { id: 7, amount: 1, label: '₹1 Gift', color: '#ec4899' },
+  { id: 8, amount: 50, label: '₹50 JACKPOT', color: '#eab308' },
 ];
 
 export const LuckyWheelModal: React.FC<LuckyWheelModalProps> = ({
@@ -37,9 +37,21 @@ export const LuckyWheelModal: React.FC<LuckyWheelModalProps> = ({
     setIsSpinning(true);
     setWonPrize(null);
 
-    // Pick a high-value or rewarding prize index (e.g. index 1, 2, 3, or 4)
-    const prizeIndex = Math.floor(Math.random() * PRIZES.length);
+    // Realistic weighted lottery probability table:
+    // Mostly ₹1 (idx 0, 6), ₹2 (idx 1, 4), occasionally ₹5 (idx 2), rare ₹10 (idx 3), super rare ₹20/₹50 (idx 5, 7)
+    const weightedPool = [
+      0, 0, 0, 0, 0, // ₹1
+      6, 6, 6, 6,    // ₹1
+      1, 1, 1, 1,    // ₹2
+      4, 4, 4,       // ₹2
+      2, 2,          // ₹5
+      3,             // ₹10
+      5,             // ₹20 (rare)
+      7,             // ₹50 (jackpot)
+    ];
+    const prizeIndex = weightedPool[Math.floor(Math.random() * weightedPool.length)];
     const selectedPrize = PRIZES[prizeIndex];
+
 
     // Segment angle = 360 / 8 = 45 degrees
     const segmentAngle = 360 / PRIZES.length;

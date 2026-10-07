@@ -45,7 +45,7 @@ export const DepositBonusModal: React.FC<DepositBonusModalProps> = ({
 
         {/* Floating 3D Lottery Tickets Banner */}
         <div className="relative my-2 h-24 flex items-center justify-center">
-          {/* Flying Ticket 1 (Left - ₹5,00,000) */}
+          {/* Flying Ticket 1 (Left - ₹500 Match) */}
           <div
             className={`absolute -left-2 top-2 w-28 h-14 bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 rounded-lg p-1.5 shadow-xl border border-yellow-200 text-slate-950 transform -rotate-12 transition-all duration-700 ${
               ticketFloating ? 'translate-y-0' : '-translate-y-4 opacity-50'
@@ -53,15 +53,15 @@ export const DepositBonusModal: React.FC<DepositBonusModalProps> = ({
           >
             <div className="border border-dashed border-slate-900/40 h-full rounded flex flex-col justify-center items-center">
               <span className="text-[8px] font-black uppercase tracking-wider text-slate-900">
-                GOLDEN PASS
+                DEPOSIT PASS
               </span>
               <span className="text-xs font-black tracking-tight text-slate-950 font-casino-num">
-                ₹5,00,000
+                +100% MATCH
               </span>
             </div>
           </div>
 
-          {/* Flying Ticket 2 (Right - 1 CRORE) */}
+          {/* Flying Ticket 2 (Right - ₹500 BONUS) */}
           <div
             className={`absolute -right-2 top-4 w-32 h-16 bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 rounded-lg p-1.5 shadow-xl border border-pink-300 text-white transform rotate-12 transition-all duration-700 ${
               ticketFloating ? 'translate-y-0' : 'translate-y-4 opacity-50'
@@ -69,13 +69,14 @@ export const DepositBonusModal: React.FC<DepositBonusModalProps> = ({
           >
             <div className="border border-dashed border-white/40 h-full rounded flex flex-col justify-center items-center">
               <span className="text-[8px] font-black uppercase tracking-wider text-pink-200">
-                MEGA JACKPOT
+                INSTANT RECHARGE
               </span>
               <span className="text-sm font-black tracking-tight text-yellow-300 font-casino-num drop-shadow">
-                ₹1 CRORE
+                GET ₹500
               </span>
             </div>
           </div>
+
 
           {/* Center 3D Gift Box Icon with Glow */}
           <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-300 to-amber-600 p-0.5 shadow-2xl shadow-amber-500/50 flex items-center justify-center animate-bounce">

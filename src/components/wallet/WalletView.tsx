@@ -14,16 +14,18 @@ interface WalletViewProps {
   totalWagered?: number;
   onTopUp: (amount: number) => Promise<{ success: boolean; error?: string }>;
   onRefreshData?: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
 }
 
 export const WalletView: React.FC<WalletViewProps> = ({
   balance,
   ledger,
   accountId,
-  totalDeposited = 1000,
+  totalDeposited = 0,
   totalWagered = 0,
   onTopUp,
   onRefreshData,
+  onOpenAuth,
 }) => {
   const { t } = useTranslation();
   const [filterType, setFilterType] = useState<string>('ALL');
@@ -69,6 +71,21 @@ export const WalletView: React.FC<WalletViewProps> = ({
 
   return (
     <div className="space-y-3 px-3 pt-3 pb-24 text-slate-800 select-none">
+      {!accountId && (
+        <div className="rounded-xl bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 border border-amber-500/30 p-3 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-amber-900 block">Guest Visitor Mode</span>
+            <span className="text-[10px] text-amber-800/80 block">Log in to unlock instant 24/7 UPI banking</span>
+          </div>
+          <button
+            onClick={() => onOpenAuth?.('login')}
+            className="px-3 py-1.5 rounded-lg bg-[#f95959] text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+          >
+            Log In
+          </button>
+        </div>
+      )}
+
       {/* 1. Main Wallet Balance Card (Matching Home Balance Style) */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
         <div className="flex items-center justify-between mb-1">
@@ -97,7 +114,13 @@ export const WalletView: React.FC<WalletViewProps> = ({
         {/* Action Buttons: Withdraw & Deposit */}
         <div className="grid grid-cols-2 gap-2.5 mt-3">
           <button
-            onClick={() => setIsWithdrawOpen(true)}
+            onClick={() => {
+              if (!accountId) {
+                onOpenAuth?.('login');
+              } else {
+                setIsWithdrawOpen(true);
+              }
+            }}
             className="h-10 rounded-xl border border-[#ffbe3f] bg-white hover:bg-amber-50 text-[#fa8c16] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-98 transition-all shadow-xs"
           >
             <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
@@ -105,7 +128,13 @@ export const WalletView: React.FC<WalletViewProps> = ({
           </button>
 
           <button
-            onClick={() => setIsTopUpOpen(true)}
+            onClick={() => {
+              if (!accountId) {
+                onOpenAuth?.('login');
+              } else {
+                setIsTopUpOpen(true);
+              }
+            }}
             className="h-10 rounded-xl bg-gradient-to-r from-[#f95959] to-[#ff7979] hover:brightness-105 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-all"
           >
             <Plus className="w-4 h-4 stroke-[3]" />

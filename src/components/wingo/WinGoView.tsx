@@ -13,6 +13,7 @@ interface WinGoViewProps {
   onRefreshData: () => void;
   onBackToLobby: () => void;
   onOpenDeposit: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
 }
 
 export const WinGoView: React.FC<WinGoViewProps> = ({
@@ -24,6 +25,7 @@ export const WinGoView: React.FC<WinGoViewProps> = ({
   onRefreshData,
   onBackToLobby,
   onOpenDeposit,
+  onOpenAuth,
 }) => {
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col select-none">
@@ -67,7 +69,13 @@ export const WinGoView: React.FC<WinGoViewProps> = ({
           </div>
 
           <button
-            onClick={onOpenDeposit}
+            onClick={() => {
+              if (!accountId && onOpenAuth) {
+                onOpenAuth('login');
+              } else {
+                onOpenDeposit();
+              }
+            }}
             className="px-2.5 py-1 rounded-full bg-gradient-to-r from-[#f95959] to-[#ff7979] text-white text-[11px] font-bold shadow-sm hover:brightness-105 transition-all flex items-center gap-1"
           >
             <PlusCircle className="w-3 h-3" />
@@ -85,6 +93,7 @@ export const WinGoView: React.FC<WinGoViewProps> = ({
           myBets={myBets}
           history={history}
           onRefreshData={onRefreshData}
+          onOpenAuth={onOpenAuth}
         />
       </main>
     </div>

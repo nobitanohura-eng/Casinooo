@@ -25,7 +25,7 @@ function assert(condition: boolean, testName: string, detail?: string) {
 async function runWalletTests() {
   console.log('\n--- SUITE 1: WALLET & ATOMIC CONCURRENCY ---');
   const testAccId = 'test_acc_wallet_' + Date.now();
-  const acc = await WalletService.getOrCreateAccount(testAccId);
+  const acc = await WalletService.getOrCreateAccount(testAccId, undefined, 1000.0);
 
   assert(acc.wallet_balance === 1000.0, 'Initial balance is exactly 1000.00 virtual credits');
 
