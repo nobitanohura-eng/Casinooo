@@ -42,6 +42,15 @@ import { DepositBonusModal } from './components/common/DepositBonusModal.tsx';
 import { LuckyWheelModal } from './components/common/LuckyWheelModal.tsx';
 import { CustomerSupportBubble } from './components/common/CustomerSupportBubble.tsx';
 import { OperatorAuthGate } from './components/operator/OperatorAuthGate.tsx';
+import { SpribeHeader } from './components/aviator/SpribeHeader.tsx';
+import {
+  HowToPlayModal,
+  ProvablyFairModal,
+  AvatarPickerModal,
+  GameRulesModal,
+  GameLimitsModal,
+  SignInModal,
+} from './components/aviator/SpribeModals.tsx';
 import { Trophy, Flame, ShieldCheck, Zap } from 'lucide-react';
 import { soundManager } from './lib/sound.ts';
 import { formatINR } from './lib/formatters.ts';
@@ -149,6 +158,28 @@ export default function App() {
     amount: 0,
     game: 'Win Go 1Min',
   });
+
+  // Spribe Aviator Modals
+  const [avatarId, setAvatarId] = useState<string>(() => {
+    return localStorage.getItem('apex_aviator_avatar') || 'av-31';
+  });
+  const [isHowToPlayOpen, setIsHowToPlayOpen] = useState<boolean>(false);
+  const [isProvablyFairOpen, setIsProvablyFairOpen] = useState<boolean>(false);
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState<boolean>(false);
+  const [isGameRulesOpen, setIsGameRulesOpen] = useState<boolean>(false);
+  const [isGameLimitsOpen, setIsGameLimitsOpen] = useState<boolean>(false);
+  const [isSignInOpen, setIsSignInOpen] = useState<boolean>(false);
+
+  const handleSelectAvatar = (newAvatar: string) => {
+    setAvatarId(newAvatar);
+    localStorage.setItem('apex_aviator_avatar', newAvatar);
+  };
+
+  const handleSwitchAccount = (newId: string) => {
+    setAccountId(newId);
+    localStorage.setItem('apex_arcade_account_id', newId);
+    showToast(`Switched Pilot to ${newId}`, 'success');
+  };
 
   // Win Go State
   const [winGoState, setWinGoState] = useState<WinGoStatePayload>({
@@ -443,6 +474,160 @@ export default function App() {
         }}
         defaultUnlocked={true}
       />
+    );
+  }
+
+  // 1. DEDICATED FULL-FIDELITY SPRIBE AVIATOR GAME EXPERIENCE
+  if (activeTab === 'home' && activeGame === 'aviator') {
+    return (
+      <div className="min-h-[100dvh] h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#101112] text-slate-100 flex flex-col select-none overscroll-none">
+        {/* Scoped Toast Alert */}
+        {toast && (
+          <div
+            className={`fixed top-12 left-1/2 -translate-x-1/2 z-50 px-3.5 py-1.5 rounded-full text-xs font-casino-num font-black shadow-2xl border transition-all animate-in fade-in duration-200 max-w-[90%] text-center pointer-events-none backdrop-blur-md ${
+              toast.type === 'success'
+                ? 'bg-emerald-950/95 text-emerald-200 border-emerald-500/60'
+                : toast.type === 'error'
+                ? 'bg-rose-950/95 text-rose-200 border-rose-500/60'
+                : 'bg-[#121929]/95 text-amber-300 border-amber-500/60'
+            }`}
+          >
+            {toast.message}
+          </div>
+        )}
+
+        {/* Official Spribe Aviator Header */}
+        <SpribeHeader
+          balance={balance}
+          accountId={accountId}
+          avatarId={avatarId}
+          onOpenDeposit={() => setIsTopUpOpen(true)}
+          onOpenAvatarPicker={() => setIsAvatarPickerOpen(true)}
+          onOpenHowToPlay={() => setIsHowToPlayOpen(true)}
+          onOpenProvablyFair={() => setIsProvablyFairOpen(true)}
+          onOpenGameRules={() => setIsGameRulesOpen(true)}
+          onOpenBetHistory={() => setActiveTab('activity')}
+          onOpenGameLimits={() => setIsGameLimitsOpen(true)}
+          onOpenFreeBets={() => setIsLuckyWheelOpen(true)}
+          onOpenLoginModal={() => setIsSignInOpen(true)}
+        />
+
+        {/* Sub-Header: Game Switcher & Return to Casino Lobby */}
+        <div className="bg-[#141516] border-b border-[#282a2e] px-3 py-1 flex items-center justify-between text-xs z-30">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-bold text-[10px] border border-rose-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+              AVIATOR LIVE
+            </span>
+
+            <button
+              onClick={() => setActiveGame('wingo')}
+              className="px-2.5 py-0.5 rounded-full bg-[#1e2024] hover:bg-[#282a2e] text-slate-400 hover:text-slate-200 font-medium text-[10px] transition-colors"
+            >
+              🎲 Play Win Go
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('wallet')}
+              className="text-[10px] text-emerald-400 font-bold hover:underline"
+            >
+              Wallet
+            </button>
+            <span className="text-slate-600">|</span>
+            <button
+              onClick={() => setActiveTab('account')}
+              className="text-[10px] text-slate-400 hover:text-white"
+            >
+              Profile
+            </button>
+          </div>
+        </div>
+
+        {/* Main Aviator Arena (Full Responsive Spribe Layout) */}
+        <main className="flex-1 overflow-y-auto overscroll-none touch-pan-y max-w-7xl w-full mx-auto p-1 sm:p-2">
+          <AviatorGame
+            state={aviatorState}
+            walletBalance={balance}
+            accountId={accountId}
+            myBets={aviatorBets}
+            history={aviatorHistory}
+            onRefreshData={refreshUserData}
+            onOpenDeposit={() => setIsTopUpOpen(true)}
+            onSwitchAccount={handleSwitchAccount}
+          />
+        </main>
+
+        {/* Global Modals */}
+        <TopUpModal
+          isOpen={isTopUpOpen}
+          onClose={() => setIsTopUpOpen(false)}
+          accountId={accountId}
+          onTopUp={handleTopUp}
+          onRefreshData={refreshUserData}
+        />
+
+        <TelegramVipModal
+          isOpen={isTelegramOpen}
+          onClose={() => setIsTelegramOpen(false)}
+        />
+
+        <DepositBonusModal
+          isOpen={isDepositBonusOpen}
+          onClose={handleCloseDepositBonus}
+          onRecharge={() => setIsTopUpOpen(true)}
+        />
+
+        <LuckyWheelModal
+          isOpen={isLuckyWheelOpen}
+          onClose={() => setIsLuckyWheelOpen(false)}
+          onBonusWon={handleBonusWon}
+        />
+
+        <VictoryModal
+          isOpen={victoryData.isOpen}
+          onClose={() => setVictoryData((prev) => ({ ...prev, isOpen: false }))}
+          amount={victoryData.amount}
+          game={victoryData.game}
+          details={victoryData.details}
+          multiplier={victoryData.multiplier}
+        />
+
+        <HowToPlayModal
+          isOpen={isHowToPlayOpen}
+          onClose={() => setIsHowToPlayOpen(false)}
+        />
+
+        <ProvablyFairModal
+          isOpen={isProvablyFairOpen}
+          onClose={() => setIsProvablyFairOpen(false)}
+        />
+
+        <AvatarPickerModal
+          isOpen={isAvatarPickerOpen}
+          currentAvatar={avatarId}
+          onSelectAvatar={handleSelectAvatar}
+          onClose={() => setIsAvatarPickerOpen(false)}
+        />
+
+        <GameRulesModal
+          isOpen={isGameRulesOpen}
+          onClose={() => setIsGameRulesOpen(false)}
+        />
+
+        <GameLimitsModal
+          isOpen={isGameLimitsOpen}
+          onClose={() => setIsGameLimitsOpen(false)}
+        />
+
+        <SignInModal
+          isOpen={isSignInOpen}
+          currentAccountId={accountId}
+          onSelectAccount={handleSwitchAccount}
+          onClose={() => setIsSignInOpen(false)}
+        />
+      </div>
     );
   }
 

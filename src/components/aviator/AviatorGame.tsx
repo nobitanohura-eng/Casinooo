@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AviatorStatePayload, AviatorBet, AviatorRecentCrash } from '../../lib/types.ts';
 import { AviatorCanvas } from './AviatorCanvas.tsx';
-import { AviatorHistory } from './AviatorHistory.tsx';
-import { AviatorBetPanel } from './AviatorBetPanel.tsx';
+import { SpribeHistoryBar } from './SpribeHistoryBar.tsx';
+import { SpribeBetControls } from './SpribeBetControls.tsx';
+import { SpribeBetsWidget } from './SpribeBetsWidget.tsx';
+import {
+  HowToPlayModal,
+  ProvablyFairModal,
+  AvatarPickerModal,
+  GameRulesModal,
+  GameLimitsModal,
+  SignInModal,
+} from './SpribeModals.tsx';
 import { getSocket } from '../../lib/socket.ts';
-import { formatINR } from '../../lib/formatters.ts';
 import { soundManager } from '../../lib/sound.ts';
-import { Users, History } from 'lucide-react';
 
 interface AviatorGameProps {
   state: AviatorStatePayload;
@@ -15,11 +22,14 @@ interface AviatorGameProps {
   myBets: AviatorBet[];
   history: AviatorRecentCrash[];
   onRefreshData: () => void;
+  onOpenDeposit?: () => void;
+  onSwitchAccount?: (newId: string) => void;
 }
 
 interface SimulatedMultiplayerBet {
   id: string;
-  user: string;
+  avatar: string;
+  username: string;
   stake: number;
   targetMultiplier: number;
   cashedOut: boolean;
@@ -33,10 +43,29 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
   myBets,
   history,
   onRefreshData,
+  onOpenDeposit,
+  onSwitchAccount,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [betsTab, setBetsTab] = useState<'all' | 'my'>('all');
+
+  // Avatar customization
+  const [avatarId, setAvatarId] = useState<string>(() => {
+    return localStorage.getItem('apex_aviator_avatar') || 'av-31';
+  });
+
+  const handleSelectAvatar = (newAvatar: string) => {
+    setAvatarId(newAvatar);
+    localStorage.setItem('apex_aviator_avatar', newAvatar);
+  };
+
+  // Modals state
+  const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const [isProvablyFairOpen, setIsProvablyFairOpen] = useState(false);
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
+  const [isGameRulesOpen, setIsGameRulesOpen] = useState(false);
+  const [isGameLimitsOpen, setIsGameLimitsOpen] = useState(false);
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   // Simulated multiplayer participants for the current round
   const [multiplayerBets, setMultiplayerBets] = useState<SimulatedMultiplayerBet[]>([]);
@@ -46,24 +75,34 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
   useEffect(() => {
     if (state.roundId && state.roundId !== prevRoundIdRef.current) {
       prevRoundIdRef.current = state.roundId;
+
+      const avatarPool = [
+        'av-70', 'av-31', 'av-48', 'av-54', 'av-69', 'av-17',
+        'av-55', 'av-9',  'av-49', 'av-8',  'av-1',  'av-21',
+        'av-15', 'av-24', 'av-40', 'av-25', 'av-72', 'av-42'
+      ];
+
       const seedUsers = [
-        { user: '98***21', stake: 500, target: 1.45 },
-        { user: '76***14', stake: 200, target: 2.10 },
-        { user: '82***90', stake: 1000, target: 1.30 },
-        { user: '44***12', stake: 100, target: 3.50 },
-        { user: '55***88', stake: 250, target: 1.80 },
-        { user: '33***67', stake: 50, target: 5.20 },
-        { user: '91***34', stake: 2000, target: 1.25 },
-        { user: '19***75', stake: 300, target: 2.80 },
-        { user: '62***09', stake: 150, target: 4.10 },
-        { user: '88***41', stake: 800, target: 1.65 },
-        { user: '70***55', stake: 100, target: 7.50 },
-        { user: '27***93', stake: 400, target: 2.30 },
+        { user: '98***21', stake: 500, target: 1.45, avatar: avatarPool[0] },
+        { user: '76***14', stake: 200, target: 2.10, avatar: avatarPool[1] },
+        { user: '82***90', stake: 1000, target: 1.30, avatar: avatarPool[2] },
+        { user: '44***12', stake: 100, target: 3.50, avatar: avatarPool[3] },
+        { user: '55***88', stake: 250, target: 1.80, avatar: avatarPool[4] },
+        { user: '33***67', stake: 50, target: 5.20, avatar: avatarPool[5] },
+        { user: '91***34', stake: 2000, target: 1.25, avatar: avatarPool[6] },
+        { user: '19***75', stake: 300, target: 2.80, avatar: avatarPool[7] },
+        { user: '62***09', stake: 150, target: 4.10, avatar: avatarPool[8] },
+        { user: '88***41', stake: 800, target: 1.65, avatar: avatarPool[9] },
+        { user: '70***55', stake: 100, target: 7.50, avatar: avatarPool[10] },
+        { user: '27***93', stake: 400, target: 2.30, avatar: avatarPool[11] },
+        { user: '65***18', stake: 1500, target: 1.55, avatar: avatarPool[12] },
+        { user: '49***32', stake: 700, target: 3.10, avatar: avatarPool[13] },
       ];
 
       const bets: SimulatedMultiplayerBet[] = seedUsers.map((u, i) => ({
         id: `mp_${state.roundId}_${i}`,
-        user: u.user,
+        avatar: u.avatar,
+        username: u.user,
         stake: u.stake,
         targetMultiplier: u.target,
         cashedOut: false,
@@ -91,7 +130,7 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
     }
   }, [state.status, state.currentMultiplier]);
 
-  // Pillar 3: Dynamic Web Audio API Turbine Hum Pitch Climbing
+  // Dynamic Web Audio API Turbine Pitch modulation
   const prevStatusRef = useRef<string>(state.status);
   useEffect(() => {
     if (state.status === 'FLYING') {
@@ -101,7 +140,7 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
       soundManager.updateTurbinePitch(state.currentMultiplier);
     } else if (state.status === 'CRASHED') {
       if (prevStatusRef.current === 'FLYING') {
-        soundManager.stopTurbineHum(true); // Stop with soft descending crash whoosh
+        soundManager.stopTurbineHum(true);
       }
     } else if (state.status === 'BETTING') {
       soundManager.stopTurbineHum(false);
@@ -109,14 +148,13 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
     prevStatusRef.current = state.status;
   }, [state.status, state.currentMultiplier]);
 
-  // Stop turbine on unmount
   useEffect(() => {
     return () => {
       soundManager.stopTurbineHum(false);
     };
   }, []);
 
-  // Find active bet for current round if any
+  // Find active bet for current round
   const currentRoundBet = myBets.find((b) => b.round_id === state.roundId) || null;
 
   const handlePlaceBet = async (stake: number, autoCashout?: number) => {
@@ -204,162 +242,88 @@ export const AviatorGame: React.FC<AviatorGameProps> = ({
     }
   };
 
-  const cashedOutMultiplayerCount = multiplayerBets.filter((b) => b.cashedOut).length;
-
   return (
-    <div className="space-y-3 px-4 pb-24">
-      {/* 1. Recent Crash Multipliers Bar (1xBet Parity Tiered Colors) */}
-      <AviatorHistory recentCrashes={history.length > 0 ? history : state.recentCrashes} />
-
-      {/* 2. Interactive Canvas */}
-      <AviatorCanvas
-        status={state.status}
-        currentMultiplier={state.currentMultiplier}
-        bettingCountdownSeconds={state.bettingCountdownSeconds}
-        crashMultiplier={state.crashMultiplier}
+    <div className="w-full flex flex-col gap-2.5 pb-20 select-none">
+      {/* 1. Multiplier History Bar */}
+      <SpribeHistoryBar
+        recentCrashes={history.length > 0 ? history : state.recentCrashes}
+        onOpenDetailedHistory={() => setIsProvablyFairOpen(true)}
       />
 
-      {/* 3. Betting Panel */}
-      <AviatorBetPanel
-        status={state.status}
-        currentMultiplier={state.currentMultiplier}
-        walletBalance={walletBalance}
-        activeUserBet={currentRoundBet}
-        isSubmitting={isSubmitting}
-        errorMessage={errorMessage}
-        onPlaceBet={handlePlaceBet}
-        onCashOut={handleCashOut}
-      />
-
-      {/* 4. Tabbed Bets Section: [ All Bets (1xBet Live Multiplayer) | My Bets ] */}
-      <div className="bg-[#0e1424] border border-slate-800 rounded-2xl p-3 shadow-xl">
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#090d18] rounded-xl border border-slate-800 mb-3">
-          <button
-            onClick={() => setBetsTab('all')}
-            className={`py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 ${
-              betsTab === 'all'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>All Bets ({multiplayerBets.length})</span>
-          </button>
-          <button
-            onClick={() => setBetsTab('my')}
-            className={`py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 ${
-              betsTab === 'my'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <History className="w-3.5 h-3.5" />
-            <span>My Bets ({myBets.length})</span>
-          </button>
+      {/* 2. Responsive 2-Column Grid on Desktop / Stacked on Mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 px-2 sm:px-3">
+        {/* Left Column on Desktop: Bets Widget (All Bets / My Bets / Top) */}
+        <div className="order-2 lg:order-1 lg:col-span-4 xl:col-span-4">
+          <SpribeBetsWidget
+            status={state.status}
+            currentMultiplier={state.currentMultiplier}
+            roundNumber={state.roundNumber}
+            multiplayerBets={multiplayerBets}
+            myBets={myBets}
+            onOpenProvablyFair={() => setIsProvablyFairOpen(true)}
+          />
         </div>
 
-        {betsTab === 'all' ? (
-          <div>
-            <div className="flex items-center justify-between px-1 mb-2 text-[10px] text-slate-400 font-mono">
-              <span>ROUND #{state.roundNumber} PARTICIPANTS</span>
-              <span className="text-emerald-400 font-bold">
-                {cashedOutMultiplayerCount} Cashed Out
-              </span>
-            </div>
+        {/* Right Column on Desktop: Stage Board + Bet Controls */}
+        <div className="order-1 lg:order-2 lg:col-span-8 xl:col-span-8 flex flex-col gap-2.5">
+          {/* Canvas Flight Board */}
+          <AviatorCanvas
+            status={state.status}
+            currentMultiplier={state.currentMultiplier}
+            bettingCountdownSeconds={state.bettingCountdownSeconds}
+            crashMultiplier={state.crashMultiplier}
+          />
 
-            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-              {multiplayerBets.map((mp) => (
-                <div
-                  key={mp.id}
-                  className={`p-2 rounded-xl border flex items-center justify-between text-xs transition-colors duration-300 ${
-                    mp.cashedOut
-                      ? 'bg-emerald-950/70 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.15)] text-emerald-200'
-                      : state.status === 'CRASHED'
-                      ? 'bg-[#0a0f1b] border-slate-800/60 text-slate-500'
-                      : 'bg-[#101728] border-slate-800 text-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-300">
-                      User {mp.user}
-                    </span>
-                    <span className="text-[10px] font-mono-nums text-slate-400">
-                      {formatINR(mp.stake)}
-                    </span>
-                  </div>
-
-                  <div>
-                    {mp.cashedOut ? (
-                      <span className="bg-emerald-500 text-slate-950 font-mono-nums font-black text-[11px] px-2 py-0.5 rounded-full shadow-sm animate-in fade-in">
-                        {mp.cashoutMultiplier?.toFixed(2)}x (+{formatINR(Math.round(mp.stake * (mp.cashoutMultiplier || 1)))})
-                      </span>
-                    ) : state.status === 'CRASHED' ? (
-                      <span className="text-[10px] text-rose-400 font-mono font-bold">
-                        Flew Away
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-amber-400/80 font-mono font-bold animate-pulse">
-                        In Flight...
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {myBets.length === 0 ? (
-              <p className="text-slate-500 text-xs text-center py-5">
-                No personal bets placed yet. Bet during countdown to participate!
-              </p>
-            ) : (
-              myBets.slice(0, 10).map((bet) => (
-                <div
-                  key={bet.id}
-                  className="p-2.5 rounded-xl bg-[#080d17] border border-slate-800/80 flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <div className="font-mono font-black text-slate-200">
-                      Wager: {formatINR(bet.stake_amount)}
-                    </div>
-                    <div className="text-[10px] text-amber-400/90 mt-0.5 font-mono">
-                      {bet.auto_cashout_multiplier
-                        ? `Auto @ ${bet.auto_cashout_multiplier.toFixed(2)}x`
-                        : 'Manual Cash Out'}
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-black ${
-                        bet.status === 'WON'
-                          ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800/60'
-                          : bet.status === 'IN_FLIGHT'
-                          ? 'bg-amber-950/80 text-amber-300 border border-amber-800/60 animate-pulse'
-                          : 'bg-rose-950/80 text-rose-400 border border-rose-900/60'
-                      }`}
-                    >
-                      {bet.status === 'WON'
-                        ? `CASHED @ ${bet.cashout_multiplier?.toFixed(2)}x (+${formatINR(bet.payout_amount)})`
-                        : bet.status === 'IN_FLIGHT'
-                        ? 'IN FLIGHT'
-                        : 'FLEW AWAY (LOST)'}
-                    </span>
-                    <div className="text-[9px] text-slate-500 mt-0.5 font-mono">
-                      {new Date(bet.created_at).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+          {/* Dual Bet Controls */}
+          <SpribeBetControls
+            status={state.status}
+            currentMultiplier={state.currentMultiplier}
+            walletBalance={walletBalance}
+            activeUserBet={currentRoundBet}
+            isSubmitting={isSubmitting}
+            errorMessage={errorMessage}
+            onPlaceBet={handlePlaceBet}
+            onCashOut={handleCashOut}
+          />
+        </div>
       </div>
+
+      {/* 3. Official Modals */}
+      <HowToPlayModal
+        isOpen={isHowToPlayOpen}
+        onClose={() => setIsHowToPlayOpen(false)}
+      />
+
+      <ProvablyFairModal
+        isOpen={isProvablyFairOpen}
+        onClose={() => setIsProvablyFairOpen(false)}
+      />
+
+      <AvatarPickerModal
+        isOpen={isAvatarPickerOpen}
+        currentAvatar={avatarId}
+        onSelectAvatar={handleSelectAvatar}
+        onClose={() => setIsAvatarPickerOpen(false)}
+      />
+
+      <GameRulesModal
+        isOpen={isGameRulesOpen}
+        onClose={() => setIsGameRulesOpen(false)}
+      />
+
+      <GameLimitsModal
+        isOpen={isGameLimitsOpen}
+        onClose={() => setIsGameLimitsOpen(false)}
+      />
+
+      {onSwitchAccount && (
+        <SignInModal
+          isOpen={isSignInOpen}
+          currentAccountId={accountId}
+          onSelectAccount={onSwitchAccount}
+          onClose={() => setIsSignInOpen(false)}
+        />
+      )}
     </div>
   );
 };

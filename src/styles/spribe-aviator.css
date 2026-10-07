@@ -1,0 +1,1000 @@
+/* ==========================================================================
+   SPRIBE AVIATOR OFFICIAL DESIGN SYSTEM & STYLES
+   Pixel-accurate recreation based on aviator.full-page.Woblo
+   ========================================================================== */
+
+:root {
+  --headerHeight: 40px;
+  --headerHeightDynamic: 40px;
+  --resultHistoryHeight: 32px;
+  --betControlsHeightRow: 184px;
+  --betControlsHeightColumn: 292px;
+  --navigationSwitcherHeight: 32px;
+  --totalWinWidgetHeight: 68px;
+  --paddingSmall: 4px;
+  --paddingMedium: 8px;
+  --marginSmall: 4px;
+
+  /* Spribe Dark Palette */
+  --spribe-bg-app: #101112;
+  --spribe-bg-panel: #1b1c1d;
+  --spribe-bg-inner: #141516;
+  --spribe-bg-card: #252528;
+  --spribe-bg-active: #2c2d30;
+  --spribe-border: #2a2b2e;
+  --spribe-border-subtle: #36363c;
+
+  /* Semantic Accents */
+  --spribe-green: #28a909;
+  --spribe-green-light: #34ce57;
+  --spribe-green-border: #b2f2a3;
+  --spribe-green-shadow: #1b7306;
+  --spribe-orange: #ff7100;
+  --spribe-orange-dark: #d07206;
+  --spribe-orange-shadow: #a84800;
+  --spribe-red: #e5053a;
+  --spribe-red-glow: rgba(229, 5, 58, 0.4);
+
+  /* Multipliers Tier Colors */
+  --spribe-mult-blue: #34b4ff;     /* < 2.00x */
+  --spribe-mult-purple: #913ef8;   /* 2.00x - 9.99x */
+  --spribe-mult-magenta: #c017b4;  /* >= 10.00x */
+
+  /* Text Colors */
+  --spribe-text-primary: #ffffff;
+  --spribe-text-secondary: #83878e;
+  --spribe-text-muted: #5e6066;
+}
+
+/* Base Body Overrides for Game */
+.spribe-aviator-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--spribe-bg-app);
+  color: var(--spribe-text-primary);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ==========================================================================
+   1. MAIN HEADER
+   ========================================================================== */
+.spribe-header {
+  height: var(--headerHeight);
+  background-color: var(--spribe-bg-panel);
+  border-bottom: 1px solid var(--spribe-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  position: relative;
+  z-index: 50;
+  width: 100%;
+}
+
+.spribe-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spribe-game-logo {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.spribe-game-logo img {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+}
+
+.spribe-header-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--spribe-red);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.spribe-how-to-play-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--spribe-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.spribe-how-to-play-btn:hover {
+  color: #fff;
+}
+
+.spribe-how-to-play-btn .icon-q {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--spribe-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.spribe-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.spribe-balance-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.spribe-balance-amount {
+  color: var(--spribe-green-light);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.spribe-balance-currency {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.spribe-deposit-btn {
+  background: var(--spribe-green);
+  border: 1px solid var(--spribe-green-border);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.spribe-deposit-btn:hover {
+  background: #2cb50c;
+  transform: translateY(-1px);
+}
+
+.spribe-burger-btn {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border-radius: 4px;
+  padding: 0;
+  transition: background 0.15s ease;
+}
+
+.spribe-burger-btn:hover {
+  background: var(--spribe-bg-active);
+}
+
+.spribe-burger-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==========================================================================
+   2. MULTIPLIER HISTORY RIBBON
+   ========================================================================== */
+.spribe-history-ribbon {
+  height: var(--resultHistoryHeight);
+  background-color: var(--spribe-bg-inner);
+  border-bottom: 1px solid var(--spribe-border);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.spribe-history-scroll {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+}
+
+.spribe-history-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.spribe-mult-pill {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  line-height: 1.2;
+}
+
+.spribe-mult-pill:hover {
+  transform: scale(1.06);
+}
+
+.spribe-mult-pill.tier-blue {
+  color: var(--spribe-mult-blue);
+  border-color: rgba(52, 180, 255, 0.25);
+}
+
+.spribe-mult-pill.tier-purple {
+  color: var(--spribe-mult-purple);
+  border-color: rgba(145, 62, 248, 0.25);
+}
+
+.spribe-mult-pill.tier-magenta {
+  color: var(--spribe-mult-magenta);
+  border-color: rgba(192, 23, 180, 0.35);
+  background: rgba(192, 23, 180, 0.12);
+}
+
+.spribe-history-dropdown-btn {
+  width: 24px;
+  height: 24px;
+  background: var(--spribe-bg-card);
+  border: 1px solid var(--spribe-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--spribe-text-secondary);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.spribe-history-dropdown-btn:hover {
+  color: #fff;
+  background: var(--spribe-bg-active);
+}
+
+/* ==========================================================================
+   3. NAVIGATION SWITCHER (Tabs: All Bets / My Bets / Top)
+   ========================================================================== */
+.spribe-navigation-switcher {
+  display: flex;
+  width: 100%;
+  height: var(--navigationSwitcherHeight);
+  background: var(--spribe-bg-inner);
+  border-radius: 64px;
+  border: 1px solid var(--spribe-border);
+  padding: 2px;
+  position: relative;
+}
+
+.spribe-nav-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--spribe-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 64px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  padding: 0 8px;
+}
+
+.spribe-nav-tab:hover {
+  color: #fff;
+}
+
+.spribe-nav-tab.active {
+  background: var(--spribe-bg-active);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   4. TOTAL WIN WIDGET
+   ========================================================================== */
+.spribe-total-win {
+  display: flex;
+  flex-direction: column;
+  background: var(--spribe-bg-inner);
+  border: 1px solid var(--spribe-border);
+  border-radius: 12px;
+  padding: 6px 10px;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.spribe-total-win-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spribe-avatars-stack {
+  display: flex;
+  align-items: center;
+}
+
+.spribe-avatar-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--spribe-bg-panel);
+  margin-left: -6px;
+  object-fit: cover;
+}
+
+.spribe-avatar-circle:first-child {
+  margin-left: 0;
+}
+
+.spribe-total-win-amount {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.spribe-total-win-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--spribe-text-secondary);
+  font-weight: 600;
+}
+
+.spribe-progress-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.spribe-progress-bar {
+  height: 100%;
+  background: var(--spribe-green);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   5. BETS LIST TABLE (All Bets)
+   ========================================================================== */
+.spribe-bets-table-header {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr 1fr;
+  padding: 6px 8px;
+  font-size: 10px;
+  color: var(--spribe-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.spribe-bets-table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr 1fr;
+  align-items: center;
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.spribe-bets-table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.spribe-bets-table-row.cashed-out {
+  background: rgba(40, 169, 9, 0.08);
+  border-left: 2px solid var(--spribe-green);
+}
+
+.spribe-player-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.spribe-player-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.spribe-player-name {
+  color: var(--spribe-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spribe-bet-cell {
+  color: #fff;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.spribe-multiplier-cell {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.spribe-win-cell {
+  color: var(--spribe-green-light);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ==========================================================================
+   6. DUAL BET CONTROL PANELS
+   ========================================================================== */
+.spribe-bet-controls-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .spribe-bet-controls-wrapper.two-panels {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.spribe-bet-panel-card {
+  background: var(--spribe-bg-panel);
+  border: 1px solid var(--spribe-border);
+  border-radius: 16px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.spribe-bet-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spribe-panel-tab-pill {
+  display: flex;
+  background: var(--spribe-bg-inner);
+  border-radius: 16px;
+  padding: 2px;
+  border: 1px solid var(--spribe-border);
+}
+
+.spribe-panel-tab-btn {
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  padding: 2px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--spribe-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spribe-panel-tab-btn.active {
+  background: var(--spribe-bg-active);
+  color: #fff;
+}
+
+.spribe-second-panel-toggle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--spribe-bg-card);
+  border: 1px solid var(--spribe-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--spribe-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spribe-second-panel-toggle:hover {
+  color: #fff;
+  background: var(--spribe-bg-active);
+}
+
+.spribe-panel-body {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Stepper Spinner */
+.spribe-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--spribe-bg-inner);
+  border: 1px solid var(--spribe-border);
+  border-radius: 20px;
+  padding: 2px 4px;
+  height: 38px;
+}
+
+.spribe-spinner-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--spribe-bg-active);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.spribe-spinner-btn:hover {
+  background: #383a3f;
+}
+
+.spribe-spinner-btn:active {
+  transform: scale(0.92);
+}
+
+.spribe-spinner-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  width: 60px;
+}
+
+/* Preset Chips */
+.spribe-presets-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.spribe-preset-chip {
+  background: var(--spribe-bg-card);
+  border: 1px solid var(--spribe-border-subtle);
+  border-radius: 64px;
+  color: var(--spribe-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 0;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.spribe-preset-chip:hover {
+  color: #fff;
+  background: var(--spribe-bg-active);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.spribe-preset-chip.active {
+  background: var(--spribe-bg-active);
+  color: #fff;
+  border-color: var(--spribe-green);
+}
+
+/* Big Action Buttons */
+.spribe-action-btn {
+  height: 68px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.15s ease;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.spribe-action-btn:active {
+  transform: translateY(2px);
+  box-shadow: none !important;
+}
+
+.spribe-action-btn.bet-state {
+  background: linear-gradient(180deg, #32cd0a 0%, #28a909 60%, #1e8705 100%);
+  border-top: 1px solid var(--spribe-green-border);
+  box-shadow: 0 4px 0 var(--spribe-green-shadow), 0 6px 12px rgba(40, 169, 9, 0.35);
+  color: #fff;
+}
+
+.spribe-action-btn.bet-state:hover {
+  background: linear-gradient(180deg, #38df0c 0%, #2ebf0b 60%, #229906 100%);
+}
+
+.spribe-action-btn.cashout-state {
+  background: linear-gradient(180deg, #ff8c1a 0%, #ff7100 60%, #d05800 100%);
+  border-top: 1px solid #ffd4a3;
+  box-shadow: 0 4px 0 var(--spribe-orange-shadow), 0 6px 14px rgba(255, 113, 0, 0.45);
+  color: #fff;
+  animation: pulse-orange 1.5s infinite;
+}
+
+.spribe-action-btn.waiting-state {
+  background: var(--spribe-bg-active);
+  border: 1px solid var(--spribe-border);
+  color: var(--spribe-text-secondary);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@keyframes pulse-orange {
+  0%, 100% {
+    box-shadow: 0 4px 0 var(--spribe-orange-shadow), 0 6px 14px rgba(255, 113, 0, 0.45);
+  }
+  50% {
+    box-shadow: 0 4px 0 var(--spribe-orange-shadow), 0 8px 22px rgba(255, 113, 0, 0.7);
+  }
+}
+
+.spribe-btn-main-label {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.spribe-btn-sub-label {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
+  line-height: 1;
+}
+
+/* Auto Row */
+.spribe-auto-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spribe-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spribe-toggle-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--spribe-text-secondary);
+}
+
+/* iOS Style Switch */
+.spribe-switch {
+  width: 32px;
+  height: 18px;
+  background: var(--spribe-bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--spribe-border);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.spribe-switch.active {
+  background: var(--spribe-green);
+  border-color: var(--spribe-green-border);
+}
+
+.spribe-switch-thumb {
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.spribe-switch.active .spribe-switch-thumb {
+  transform: translateX(14px);
+}
+
+/* ==========================================================================
+   7. STAGE BOARD (Canvas Container)
+   ========================================================================== */
+.spribe-stage-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  background: #000000;
+  border-radius: 20px;
+  border: 1px solid var(--spribe-border);
+  overflow: hidden;
+}
+
+.spribe-active-players-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 10;
+}
+
+.spribe-players-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--spribe-text-secondary);
+}
+
+/* Waiting / Takeoff Loader overlay */
+.spribe-waiting-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 20;
+  background: radial-gradient(circle at center, rgba(16, 17, 18, 0.7) 0%, rgba(0, 0, 0, 0.9) 100%);
+}
+
+.spribe-waiting-title {
+  color: var(--spribe-text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.spribe-waiting-loader-bar {
+  width: 220px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.spribe-waiting-loader-fill {
+  height: 100%;
+  background: var(--spribe-red);
+  border-radius: 6px;
+  box-shadow: 0 0 8px var(--spribe-red);
+  transition: width 0.1s linear;
+}
+
+/* ==========================================================================
+   8. SETTINGS MENU / USER DRAWER
+   ========================================================================== */
+.spribe-dropdown-menu {
+  position: absolute;
+  top: 42px;
+  right: 12px;
+  width: 260px;
+  background: var(--spribe-bg-panel);
+  border: 1px solid var(--spribe-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  overflow: hidden;
+  animation: spribe-menu-in 0.18s ease-out;
+}
+
+@keyframes spribe-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.spribe-user-info-block {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--spribe-border);
+  background: var(--spribe-bg-inner);
+}
+
+.spribe-user-avatar-lg {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--spribe-border);
+}
+
+.spribe-user-meta {
+  flex: 1;
+}
+
+.spribe-user-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  font-family: monospace;
+}
+
+.spribe-change-avatar-btn {
+  background: transparent;
+  border: none;
+  color: var(--spribe-green-light);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 2px;
+  text-decoration: underline;
+}
+
+.spribe-menu-section {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spribe-menu-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.spribe-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--spribe-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.spribe-toggle-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--spribe-text-secondary);
+}
+
+.spribe-menu-link-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: var(--spribe-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.spribe-menu-link-item:hover {
+  color: #fff;
+}
+
+.spribe-menu-link-item img,
+.spribe-menu-link-item svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   9. PROVABLY FAIR FOOTER
+   ========================================================================== */
+.spribe-bets-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  font-size: 10px;
+  color: var(--spribe-text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 4px;
+}
+
+.spribe-pf-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--spribe-text-secondary);
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.spribe-pf-btn:hover {
+  color: #fff;
+}
+
+.spribe-powered-by {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--spribe-text-muted);
+  font-size: 10px;
+}
