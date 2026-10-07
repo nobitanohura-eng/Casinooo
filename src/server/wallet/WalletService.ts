@@ -50,6 +50,11 @@ export class WalletService {
     });
 
     if (mutateResult.success) {
+      // 1.5% Dynamic Gullak (Piggy Bank) contribution
+      const gullakShare = roundCurrency(roundedAmount * 0.015);
+      if (gullakShare > 0) {
+        db.addGullakContribution(accountId, gullakShare);
+      }
       // 3-Level downline referral commission distribution
       db.processAffiliateCommissions(accountId, roundedAmount, game, betId);
     }

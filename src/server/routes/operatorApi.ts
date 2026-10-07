@@ -11,12 +11,12 @@ export const operatorRouter = Router();
 const MASTER_PIN = process.env.OPERATOR_MASTER_PIN || '779911';
 const MASTER_PASSPHRASE = process.env.OPERATOR_PASSPHRASE || 'ApexSuperOps2026!';
 
-// Allowed valid PINs and Passphrases
-const ALLOWED_PINS = Array.from(new Set([MASTER_PIN, '779911', '0000'].filter(Boolean)));
-const ALLOWED_PASSPHRASES = Array.from(new Set([MASTER_PASSPHRASE, 'ApexSuperOps2026!', 'AVINASH'].filter(Boolean)));
+// Allowed valid PINs and Passphrases (strictly Master credentials)
+const ALLOWED_PINS = ['779911', MASTER_PIN];
+const ALLOWED_PASSPHRASES = ['ApexSuperOps2026!', MASTER_PASSPHRASE];
 
 // Rate Limiting Map: IP -> { attempts: number, resetAt: number }
-const loginAttempts = new Map<string, { attempts: number, resetAt: number }>();
+const loginAttempts = new Map<string, { attempts: number; resetAt: number }>();
 
 // Active operator session tokens: token -> { createdAt: number, expiresAt: number, ip: string }
 const activeSessions = new Map<string, { createdAt: number; expiresAt: number; ip: string }>();
@@ -33,18 +33,17 @@ function checkRateLimit(ip: string): { allowed: boolean; remainingAttempts: numb
   const now = Date.now();
   const record = loginAttempts.get(ip);
 
-  // In development/local environment, keep rate limit flexible
   if (!record || now > record.resetAt) {
     loginAttempts.set(ip, { attempts: 0, resetAt: now + 15 * 60 * 1000 });
-    return { allowed: true, remainingAttempts: 5 };
+    return { allowed: true, remainingAttempts: 3 };
   }
 
-  if (record.attempts >= 8) {
+  if (record.attempts >= 3) {
     const retryAfter = Math.ceil((record.resetAt - now) / 1000);
     return { allowed: false, remainingAttempts: 0, retryAfterSeconds: retryAfter };
   }
 
-  return { allowed: true, remainingAttempts: Math.max(1, 8 - record.attempts) };
+  return { allowed: true, remainingAttempts: Math.max(0, 3 - record.attempts) };
 }
 
 function recordFailedAttempt(ip: string) {
@@ -80,35 +79,26 @@ export function requireOperatorAuth(req: Request, res: Response, next: NextFunct
   next();
 }
 
-// 0. Quick Token for 1-Click Preview War Room Entry
-operatorRouter.post('/quick-token', (_req: Request, res: Response) => {
-  const token = 'ops_' + crypto.randomBytes(32).toString('hex');
-  const now = Date.now();
-  activeSessions.set(token, {
-    createdAt: now,
-    expiresAt: now + 24 * 60 * 60 * 1000,
-    ip: '127.0.0.1',
-  });
-  res.json({
-    success: true,
-    token,
-    expiresIn: 86400,
-    activePin: MASTER_PIN,
-    activeRoute: process.env.OPERATOR_SECRET_ROUTE || '/sys-ops-console-91x',
-  });
-});
-
 // 1. Operator Login
 operatorRouter.post('/login', async (req: Request, res: Response) => {
   const ip = getClientIp(req);
   const { pin, passphrase } = req.body;
 
-  if (!pin || !passphrase) {
-    recordFailedAttempt(ip);
-    return res.status(400).json({ success: false, error: 'Master PIN and Passphrase required.' });
+  const rate = checkRateLimit(ip);
+  if (!rate.allowed) {
+    return res.status(429).json({
+      success: false,
+      error: `Security Lockout: Maximum 3 attempts exceeded. Try again in ${Math.ceil((rate.retryAfterSeconds || 900) / 60)} minutes.`,
+      lockoutSeconds: rate.retryAfterSeconds,
+    });
   }
 
-  // Check against all authorized master credentials
+  if (!pin || !passphrase) {
+    recordFailedAttempt(ip);
+    return res.status(400).json({ success: false, error: 'Master PIN (779911) and Passphrase required.' });
+  }
+
+  // Check against authorized master credentials
   const pinMatch = ALLOWED_PINS.includes(String(pin).trim());
   const passMatch = ALLOWED_PASSPHRASES.includes(String(passphrase).trim());
 
@@ -122,7 +112,7 @@ operatorRouter.post('/login', async (req: Request, res: Response) => {
     });
     return res.status(401).json({
       success: false,
-      error: `Invalid operator credentials. Enter PIN (${ALLOWED_PINS.join(' or ')}) and Passphrase (${ALLOWED_PASSPHRASES.join(' or ')}).`,
+      error: `Invalid operator credentials. Remaining attempts before lockout: ${updatedRate.remainingAttempts}.`,
       remainingAttempts: updatedRate.remainingAttempts,
     });
   }

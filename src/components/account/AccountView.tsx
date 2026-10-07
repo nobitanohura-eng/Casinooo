@@ -30,8 +30,10 @@ interface AccountViewProps {
   onOpenDeposit?: () => void;
   onOpenWithdraw?: () => void;
   onOpenLuckyWheel?: () => void;
+  onOpenGullak?: () => void;
   onOpenTelegram?: () => void;
   onOpenSupport?: () => void;
+  onLogout?: () => void;
   onSwitchAccount?: (id: string) => void;
   onNavigateTab?: (tab: any) => void;
 }
@@ -43,8 +45,10 @@ export const AccountView: React.FC<AccountViewProps> = ({
   onOpenDeposit,
   onOpenWithdraw,
   onOpenLuckyWheel,
+  onOpenGullak,
   onOpenTelegram,
   onOpenSupport,
+  onLogout,
   onSwitchAccount,
   onNavigateTab,
 }) => {
@@ -326,19 +330,49 @@ export const AccountView: React.FC<AccountViewProps> = ({
         )}
       </div>
 
-      {/* 5. Switch Account / Reset Pilot Session */}
-      <div className="pt-2 text-center">
+      {/* 5. Auxiliary Piggy Bank Vault (Gullak) */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center font-black shadow-sm">
+            🪙
+          </div>
+          <div>
+            <span className="font-bold text-slate-900 text-xs block">
+              Gullak Piggy Bank Vault
+            </span>
+            <span className="text-[10px] text-[#768096] block">
+              1.5% saved automatically from every game round
+            </span>
+          </div>
+        </div>
+
         <button
           onClick={() => {
-            soundManager.play('click');
-            const newId = `acc_pilot_${Math.floor(10 + Math.random() * 90)}`;
-            if (onSwitchAccount) onSwitchAccount(newId);
+            soundManager.play('chip');
+            if (onOpenGullak) onOpenGullak();
           }}
-          className="text-xs text-[#768096] hover:text-[#f95959] font-bold flex items-center justify-center gap-1.5 mx-auto py-2 px-4 rounded-xl hover:bg-slate-100 transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-casino-num font-black text-xs shadow-sm active:scale-95 transition-all"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Switch Pilot Session ({account.id})</span>
+          ₹{(account.gullak_balance || 0).toFixed(2)}
         </button>
+      </div>
+
+      {/* 6. Official Member Logout Action */}
+      <div className="pt-2 text-center pb-4">
+        {onLogout && (
+          <button
+            onClick={() => {
+              soundManager.play('click');
+              onLogout();
+            }}
+            className="text-xs text-rose-500 hover:text-rose-700 font-bold flex items-center justify-center gap-1.5 mx-auto py-2 px-4 rounded-xl hover:bg-rose-50 transition-colors border border-rose-200"
+          >
+            <span>Sign Out of Member Account</span>
+          </button>
+        )}
+        <p className="text-[10px] text-slate-400 mt-3 font-casino-num">
+          Apex Arcade • Official India Edition • 256-Bit Financial Encryption
+        </p>
       </div>
     </div>
   );

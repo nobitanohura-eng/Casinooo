@@ -4,8 +4,22 @@ import { winGoManager } from '../games/win-go/WinGoRoundManager.ts';
 import { aviatorManager } from '../games/aviator/AviatorRoundManager.ts';
 import { db } from '../database/db.ts';
 import { TopUpSchema, WinGoBetSchema, AviatorBetSchema, AviatorCashOutSchema } from '../validation/schemas.ts';
+import { AuthService } from '../auth/authService.ts';
 
 export const apiRouter = Router();
+
+// Throttling: Enforce an API rate-limit of 1 action per 500ms on interactive round entries
+const betRateLimits = new Map<string, number>();
+
+function checkBetThrottle(accountId: string): boolean {
+  const now = Date.now();
+  const lastTime = betRateLimits.get(accountId) || 0;
+  if (now - lastTime < 500) {
+    return false;
+  }
+  betRateLimits.set(accountId, now);
+  return true;
+}
 
 // Health check endpoint
 apiRouter.get('/health', (_req: Request, res: Response) => {
@@ -17,7 +31,121 @@ apiRouter.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-// Auth / Session bootstrapping
+// 1. Mobile Registration with Math Challenge & Invitation
+apiRouter.post('/auth/register', (req: Request, res: Response) => {
+  try {
+    const { mobile, password, confirmPassword, mathChallenge, referralCode } = req.body;
+
+    if (!mobile || !AuthService.isValidIndianMobile(mobile)) {
+      return res.status(400).json({ success: false, error: 'Valid 10-digit Indian mobile number (+91) required.' });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long.' });
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      return res.status(400).json({ success: false, error: 'Passwords do not match.' });
+    }
+
+    // Verify visual math challenge if provided
+    if (mathChallenge) {
+      const { num1, num2, answer } = mathChallenge;
+      if (typeof num1 === 'number' && typeof num2 === 'number') {
+        if (parseInt(answer, 10) !== num1 + num2) {
+          return res.status(400).json({ success: false, error: 'Incorrect visual math challenge answer. Please retry.' });
+        }
+      }
+    }
+
+    const passwordHash = AuthService.hashPassword(password);
+    const regResult = db.registerUser({
+      mobile,
+      passwordHash,
+      referralCode,
+    });
+
+    if (!regResult.success || !regResult.account) {
+      return res.status(400).json({ success: false, error: regResult.error });
+    }
+
+    const token = AuthService.createSessionToken(regResult.account.id, regResult.account.mobile);
+
+    res.json({
+      success: true,
+      token,
+      account: regResult.account,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Mobile Login
+apiRouter.post('/auth/login', (req: Request, res: Response) => {
+  try {
+    const { mobile, password } = req.body;
+
+    if (!mobile || !password) {
+      return res.status(400).json({ success: false, error: 'Mobile number and password are required.' });
+    }
+
+    const account = db.getAccountByMobile(mobile);
+    if (!account) {
+      return res.status(401).json({ success: false, error: 'Account not found with this mobile number.' });
+    }
+
+    if (account.password_hash) {
+      const valid = AuthService.verifyPassword(password, account.password_hash);
+      if (!valid) {
+        return res.status(401).json({ success: false, error: 'Incorrect password. Please try again.' });
+      }
+    }
+
+    const token = AuthService.createSessionToken(account.id, account.mobile);
+
+    res.json({
+      success: true,
+      token,
+      account,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Current User Session Verification
+apiRouter.get('/auth/me', (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.query.token as string);
+
+  if (!token) {
+    return res.json({ success: true, authenticated: false, account: null });
+  }
+
+  const payload = AuthService.verifySessionToken(token);
+  if (!payload) {
+    return res.json({ success: true, authenticated: false, account: null });
+  }
+
+  const account = db.getAccount(payload.accountId);
+  if (!account) {
+    return res.json({ success: true, authenticated: false, account: null });
+  }
+
+  res.json({
+    success: true,
+    authenticated: true,
+    account,
+  });
+});
+
+// 4. Logout
+apiRouter.post('/auth/logout', (_req: Request, res: Response) => {
+  res.json({ success: true, message: 'Logged out successfully.' });
+});
+
+// 5. Auth / Session bootstrapping (Legacy Fallback)
 apiRouter.get('/auth/session', async (req: Request, res: Response) => {
   try {
     const accountId = (req.query.accountId as string) || 'acc_demo_pilot_01';
@@ -116,6 +244,10 @@ apiRouter.post('/wingo/bet', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message });
     }
 
+    if (!checkBetThrottle(parsed.data.accountId)) {
+      return res.status(429).json({ success: false, error: 'Throttled: Maximum 1 bet per 500ms to eliminate multi-tap drain.' });
+    }
+
     const result = await winGoManager.placeBet(parsed.data as any);
     if (!result.success) {
       return res.status(400).json({ success: false, error: result.error });
@@ -148,6 +280,10 @@ apiRouter.post('/aviator/bet', async (req: Request, res: Response) => {
     const parsed = AviatorBetSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message });
+    }
+
+    if (!checkBetThrottle(parsed.data.accountId)) {
+      return res.status(429).json({ success: false, error: 'Throttled: Maximum 1 bet per 500ms to eliminate multi-tap drain.' });
     }
 
     const result = await aviatorManager.placeBet(parsed.data as any);
@@ -291,5 +427,60 @@ apiRouter.post('/attendance/claim', (req: Request, res: Response) => {
     return res.status(400).json(result);
   }
   res.json(result);
+});
+
+// --- RETENTION & LOSS-SOFTENING ENGINE ROUTES ---
+
+// 1. Smash Gullak (Piggy Bank Vault)
+apiRouter.post('/retention/smash-gullak', async (req: Request, res: Response) => {
+  try {
+    const { accountId } = req.body;
+    if (!accountId) {
+      return res.status(400).json({ success: false, error: 'Account ID required.' });
+    }
+    const result = await db.smashGullak(accountId);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Zero-Balance Lifeline Contingency Spin
+apiRouter.post('/retention/lifeline-spin', async (req: Request, res: Response) => {
+  try {
+    const { accountId } = req.body;
+    if (!accountId) {
+      return res.status(400).json({ success: false, error: 'Account ID required.' });
+    }
+    const result = await db.claimLifelineSpin(accountId);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Daily Loss Rebate Summary
+apiRouter.get('/retention/daily-rebate', (req: Request, res: Response) => {
+  try {
+    const accountId = (req.query.accountId as string) || 'acc_demo_pilot_01';
+    const rebateInfo = db.calculateDailyRebate(accountId);
+    res.json({ success: true, ...rebateInfo });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Claim Daily Loss Rebate
+apiRouter.post('/retention/claim-rebate', async (req: Request, res: Response) => {
+  try {
+    const { accountId } = req.body;
+    if (!accountId) {
+      return res.status(400).json({ success: false, error: 'Account ID required.' });
+    }
+    const result = await db.claimDailyRebate(accountId);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 

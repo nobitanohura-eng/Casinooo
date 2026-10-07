@@ -1,4 +1,4 @@
-export type LedgerType = 'TOPUP' | 'BET' | 'WIN' | 'WITHDRAW' | 'REFUND' | 'COMMISSION' | 'ATTENDANCE' | 'OPERATOR_ADJUSTMENT';
+export type LedgerType = 'TOPUP' | 'BET' | 'WIN' | 'WITHDRAW' | 'REFUND' | 'COMMISSION' | 'ATTENDANCE' | 'OPERATOR_ADJUSTMENT' | 'GULLAK_BREAK' | 'LIFELINE_SPIN' | 'DAILY_REBATE';
 
 export interface Account {
   id: string;
@@ -15,6 +15,10 @@ export interface Account {
   total_commission?: number;
   attendance_days?: number;
   last_attendance_date?: string | null;
+  gullak_balance?: number;
+  consecutive_losses?: number;
+  lifeline_spin_used?: boolean;
+  last_rebate_date?: string | null;
   created_at: string;
   updated_at: string;
 }

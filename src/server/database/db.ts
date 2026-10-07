@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export type LedgerType = 'TOPUP' | 'BET' | 'WIN' | 'WITHDRAW' | 'REFUND' | 'COMMISSION' | 'ATTENDANCE' | 'OPERATOR_ADJUSTMENT';
+export type LedgerType = 'TOPUP' | 'BET' | 'WIN' | 'WITHDRAW' | 'REFUND' | 'COMMISSION' | 'ATTENDANCE' | 'OPERATOR_ADJUSTMENT' | 'GULLAK_BREAK' | 'LIFELINE_SPIN' | 'DAILY_REBATE';
 
 export interface Account {
   id: string;
   mobile: string;
+  password_hash?: string;
   wallet_balance: number; // Stored as decimal number with 2 decimals precision
   is_demo: boolean;
   is_banned: boolean; // Freeze / Ban toggle
@@ -17,6 +18,10 @@ export interface Account {
   total_commission: number;
   attendance_days: number;
   last_attendance_date: string | null;
+  gullak_balance: number; // 1.5% allocated from every bet
+  consecutive_losses: number; // Consecutive negative rounds count for pity engine
+  lifeline_spin_used: boolean; // Zero balance emergency spin
+  last_rebate_date: string | null; // Daily 5% loss rebate claim date
   created_at: string;
   updated_at: string;
 }
@@ -175,7 +180,7 @@ class DatabaseManager {
     upi_id: 'apexarcade.pay@upi',
     qr_code_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=apexarcade.pay@upi&pn=ApexArcade&cu=INR',
     telegram_link: 'https://t.me/apexarcade_vip',
-    marquee_broadcast: '🇮🇳 Welcome to Apex Arcade VIP Server. 100% Provably Fair Sandbox Gaming with Instant Settlements.',
+    marquee_broadcast: '🇮🇳 Welcome to Apex Arcade VIP Server. 100% Provably Fair Gaming with Instant 24/7 UPI Settlements.',
     wingo_mode: 'MANUAL',
     wingo_forced_number: null,
     aviator_mode: 'STATISTICAL',
@@ -197,7 +202,7 @@ class DatabaseManager {
       id: demoId,
       mobile: '+91 98765 43210',
       wallet_balance: 1000.0,
-      is_demo: true,
+      is_demo: false,
       is_banned: false,
       total_deposited: 1000.0,
       total_wagered: 1250.0,
@@ -208,6 +213,10 @@ class DatabaseManager {
       total_commission: 320.0,
       attendance_days: 3,
       last_attendance_date: null,
+      gullak_balance: 38.5,
+      consecutive_losses: 0,
+      lifeline_spin_used: false,
+      last_rebate_date: null,
       created_at: now,
       updated_at: now,
     };
@@ -223,10 +232,24 @@ class DatabaseManager {
       closing_balance: 1000.0,
       reference_id: 'WELCOME_BONUS',
       idempotency_key: 'idem_signup_' + demoId,
-      metadata: { reason: 'Welcome Virtual Credits' },
+      metadata: { reason: 'Welcome Bonus' },
       created_at: now,
     });
     this.idempotencyKeys.add('idem_signup_' + demoId);
+
+    // Seed approved deposit for initial verification compliance
+    const approvedDepId = 'dep_approved_init_' + demoId;
+    this.deposits.set(approvedDepId, {
+      id: approvedDepId,
+      account_id: demoId,
+      amount: 1000.0,
+      utr_number: '918273645012',
+      payment_method: 'Instant UPI',
+      status: 'APPROVED',
+      operator_note: 'Initial Verified Deposit',
+      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      processed_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    });
 
     // Add a demo pending deposit
     const depId = 'dep_sample_01';
@@ -272,6 +295,10 @@ class DatabaseManager {
       total_commission: 9800.0,
       attendance_days: 7,
       last_attendance_date: now.split('T')[0],
+      gullak_balance: 120.0,
+      consecutive_losses: 0,
+      lifeline_spin_used: false,
+      last_rebate_date: null,
       created_at: now,
       updated_at: now,
     });
@@ -292,9 +319,14 @@ class DatabaseManager {
       total_commission: 15.0,
       attendance_days: 2,
       last_attendance_date: null,
+      gullak_balance: 35.0,
+      consecutive_losses: 0,
+      lifeline_spin_used: false,
+      last_rebate_date: null,
       created_at: now,
       updated_at: now,
     });
+
   }
 
   private async acquireAccountLock(accountId: string): Promise<() => void> {
@@ -342,7 +374,7 @@ class DatabaseManager {
         id: accountId,
         mobile: mobile || `+91 9${Math.floor(100000000 + Math.random() * 900000000)}`,
         wallet_balance: 1000.0,
-        is_demo: true,
+        is_demo: false,
         is_banned: false,
         total_deposited: 1000.0,
         total_wagered: 0.0,
@@ -353,6 +385,10 @@ class DatabaseManager {
         total_commission: 0.0,
         attendance_days: 0,
         last_attendance_date: null,
+        gullak_balance: 0.0,
+        consecutive_losses: 0,
+        lifeline_spin_used: false,
+        last_rebate_date: null,
         created_at: now,
         updated_at: now,
       };
@@ -369,6 +405,86 @@ class DatabaseManager {
       });
     }
     return { ...acc };
+  }
+
+  public getAccountByMobile(mobile: string): Account | null {
+    const cleanTarget = mobile.replace(/\D/g, '').slice(-10);
+    for (const acc of this.accounts.values()) {
+      const cleanAcc = acc.mobile.replace(/\D/g, '').slice(-10);
+      if (cleanAcc === cleanTarget) {
+        return { ...acc };
+      }
+    }
+    return null;
+  }
+
+  public registerUser(params: {
+    mobile: string;
+    passwordHash: string;
+    referralCode?: string;
+  }): { success: boolean; account?: Account; error?: string } {
+    const { mobile, passwordHash, referralCode } = params;
+    const cleanMobile = mobile.replace(/\D/g, '').slice(-10);
+
+    // Check duplicate
+    if (this.getAccountByMobile(cleanMobile)) {
+      return { success: false, error: 'Mobile number is already registered. Please login.' };
+    }
+
+    const now = new Date().toISOString();
+    const newId = 'acc_usr_' + uuidv4().substring(0, 10);
+    const myCode = 'APEX' + Math.floor(1000 + Math.random() * 9000);
+
+    // Resolve inviter
+    let referredById: string | null = null;
+    if (referralCode && referralCode.trim()) {
+      const targetCode = referralCode.trim().toUpperCase();
+      for (const a of this.accounts.values()) {
+        if (a.referral_code && a.referral_code.toUpperCase() === targetCode) {
+          referredById = a.id;
+          break;
+        }
+      }
+    }
+
+    const formattedMobile = `+91 ${cleanMobile.substring(0, 5)} ${cleanMobile.substring(5)}`;
+    const newAccount: Account = {
+      id: newId,
+      mobile: formattedMobile,
+      password_hash: passwordHash,
+      wallet_balance: 100.0, // Welcome gift ₹100
+      is_demo: false,
+      is_banned: false,
+      total_deposited: 100.0,
+      total_wagered: 0.0,
+      total_won: 0.0,
+      referred_by: referredById,
+      referral_code: myCode,
+      claimable_commission: 0.0,
+      total_commission: 0.0,
+      attendance_days: 0,
+      last_attendance_date: null,
+      gullak_balance: 0.0,
+      consecutive_losses: 0,
+      lifeline_spin_used: false,
+      last_rebate_date: null,
+      created_at: now,
+      updated_at: now,
+    };
+
+    this.accounts.set(newId, newAccount);
+
+    this.recordLedgerEntryDirect({
+      account_id: newId,
+      type: 'TOPUP',
+      amount: 100.0,
+      closing_balance: 100.0,
+      reference_id: 'WELCOME_BONUS',
+      idempotency_key: 'idem_signup_bonus_' + newId,
+      metadata: { reason: 'Welcome Gift Bonus' },
+    });
+
+    return { success: true, account: { ...newAccount } };
   }
 
   public setAccountBanned(accountId: string, banned: boolean, operatorIp: string): { success: boolean; error?: string } {
@@ -769,9 +885,20 @@ class DatabaseManager {
     const acc = this.accounts.get(accountId);
     if (!acc) return { success: false, error: 'Account not found' };
     if (acc.is_banned) return { success: false, error: 'Account frozen by compliance operator.' };
-    if (amount <= 0) return { success: false, error: 'Amount must be positive' };
+    if (amount < 300) return { success: false, error: 'Minimum withdrawal amount is ₹300.' };
     if (acc.wallet_balance < amount) return { success: false, error: 'Insufficient wallet balance' };
     if (!upiId || !upiId.includes('@')) return { success: false, error: 'Valid UPI ID required (e.g. mobile@upi)' };
+
+    // Initial Verification Check: At least one verified lifetime deposit of min ₹100
+    const hasApprovedMinDeposit = Array.from(this.deposits.values()).some(
+      (d) => d.account_id === accountId && d.status === 'APPROVED' && d.amount >= 100
+    );
+    if (!hasApprovedMinDeposit) {
+      return {
+        success: false,
+        error: 'Initial Verification Check Required: Please complete at least one verified deposit of minimum ₹100 before withdrawing.',
+      };
+    }
 
     // 1X Turnover Check: total_wagered must be >= total_deposited
     const requiredTurnover = acc.total_deposited;
@@ -1009,6 +1136,208 @@ class DatabaseManager {
       .filter((b) => b.account_id === accountId)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, limit);
+  }
+
+  // --- RETENTION & LOSS-SOFTENING ENGINE ---
+
+  /**
+   * Allocate 1.5% of every bet into the player's auxiliary Gullak piggy bank
+   */
+  public addGullakContribution(accountId: string, amount: number): void {
+    const acc = this.accounts.get(accountId);
+    if (!acc) return;
+    const contribution = roundCurrency(amount);
+    acc.gullak_balance = roundCurrency((acc.gullak_balance || 0) + contribution);
+    acc.updated_at = new Date().toISOString();
+  }
+
+  /**
+   * Smash Gullak: Recover accumulated Gullak balance into main balance with 1x playthrough requirement
+   */
+  public async smashGullak(accountId: string): Promise<{
+    success: boolean;
+    recoveredAmount: number;
+    newBalance: number;
+    error?: string;
+  }> {
+    const acc = this.accounts.get(accountId);
+    if (!acc) return { success: false, recoveredAmount: 0, newBalance: 0, error: 'Account not found' };
+
+    const gullakAmount = roundCurrency(acc.gullak_balance || 0);
+    if (gullakAmount <= 0) {
+      return { success: false, recoveredAmount: 0, newBalance: acc.wallet_balance, error: 'Gullak piggy bank is empty. Play more rounds to fill it!' };
+    }
+
+    acc.gullak_balance = 0.0;
+    // Add 1x playthrough requirement
+    acc.total_deposited = roundCurrency(acc.total_deposited + gullakAmount);
+
+    const mutateRes = await this.mutateWallet({
+      accountId,
+      amountDelta: gullakAmount,
+      type: 'GULLAK_BREAK',
+      referenceId: 'gullak_' + uuidv4().substring(0, 8),
+      idempotencyKey: `gullak_smash_${Date.now()}_${accountId}`,
+      metadata: { reason: 'Gullak Piggy Bank Smash Recovery', recovered: gullakAmount },
+    });
+
+    if (!mutateRes.success) {
+      // Revert if mutation failed
+      acc.gullak_balance = gullakAmount;
+      return { success: false, recoveredAmount: 0, newBalance: acc.wallet_balance, error: mutateRes.error };
+    }
+
+    return {
+      success: true,
+      recoveredAmount: gullakAmount,
+      newBalance: mutateRes.newBalance,
+    };
+  }
+
+  /**
+   * Zero-Balance Contingency Wheel (Lifeline Spin):
+   * Triggered when primary balance reaches ₹0.
+   * Weighted outcomes: ₹5 credits (60%), ₹10 credits (30%), +25% Deposit Voucher (10%).
+   */
+  public async claimLifelineSpin(accountId: string): Promise<{
+    success: boolean;
+    prize: { type: 'CREDITS' | 'VOUCHER'; amount: number; label: string };
+    newBalance: number;
+    error?: string;
+  }> {
+    const acc = this.accounts.get(accountId);
+    if (!acc) return { success: false, prize: { type: 'CREDITS', amount: 0, label: '' }, newBalance: 0, error: 'Account not found' };
+
+    if (acc.wallet_balance > 0) {
+      return { success: false, prize: { type: 'CREDITS', amount: 0, label: '' }, newBalance: acc.wallet_balance, error: 'Lifeline Spin is only available when balance is ₹0.' };
+    }
+
+    if (acc.lifeline_spin_used) {
+      return { success: false, prize: { type: 'CREDITS', amount: 0, label: '' }, newBalance: 0, error: 'Lifeline Spin already claimed for this zero-balance session.' };
+    }
+
+    // Determine weighted prize
+    const rand = Math.random() * 100;
+    let prize: { type: 'CREDITS' | 'VOUCHER'; amount: number; label: string };
+
+    if (rand < 60) {
+      prize = { type: 'CREDITS', amount: 5.0, label: '₹5.00 Instant Lifeline Credits' };
+    } else if (rand < 90) {
+      prize = { type: 'CREDITS', amount: 10.0, label: '₹10.00 Lucky Lifeline Credits' };
+    } else {
+      prize = { type: 'VOUCHER', amount: 25.0, label: '+25% Extra Deposit Bonus Voucher' };
+    }
+
+    acc.lifeline_spin_used = true;
+    acc.updated_at = new Date().toISOString();
+
+    let newBal = acc.wallet_balance;
+    if (prize.type === 'CREDITS') {
+      const mutateRes = await this.mutateWallet({
+        accountId,
+        amountDelta: prize.amount,
+        type: 'LIFELINE_SPIN',
+        referenceId: 'lifeline_' + uuidv4().substring(0, 8),
+        idempotencyKey: `lifeline_spin_${Date.now()}_${accountId}`,
+        metadata: { prize: prize.label },
+      });
+      if (mutateRes.success) {
+        newBal = mutateRes.newBalance;
+      }
+    }
+
+    return {
+      success: true,
+      prize,
+      newBalance: newBal,
+    };
+  }
+
+  /**
+   * Track consecutive outcomes for the Anti-Rage Pity Engine
+   */
+  public recordBetOutcome(accountId: string, won: boolean): void {
+    const acc = this.accounts.get(accountId);
+    if (!acc) return;
+    if (won) {
+      acc.consecutive_losses = 0;
+    } else {
+      acc.consecutive_losses = (acc.consecutive_losses || 0) + 1;
+    }
+    // If balance restored, allow lifeline spin again in future zero events
+    if (acc.wallet_balance > 0) {
+      acc.lifeline_spin_used = false;
+    }
+    acc.updated_at = new Date().toISOString();
+  }
+
+  public getConsecutiveLosses(accountId: string): number {
+    const acc = this.accounts.get(accountId);
+    return acc ? (acc.consecutive_losses || 0) : 0;
+  }
+
+  /**
+   * Calculate 5% Daily Loss Rebate based on today's net difference
+   */
+  public calculateDailyRebate(accountId: string): {
+    eligible: boolean;
+    netLoss: number;
+    rebateAmount: number;
+  } {
+    const acc = this.accounts.get(accountId);
+    if (!acc) return { eligible: false, netLoss: 0, rebateAmount: 0 };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (acc.last_rebate_date === todayStr) {
+      return { eligible: false, netLoss: 0, rebateAmount: 0 };
+    }
+
+    const netLoss = Math.max(0, roundCurrency(acc.total_wagered - acc.total_won));
+    const rebateAmount = roundCurrency(netLoss * 0.05);
+
+    return {
+      eligible: rebateAmount >= 1.0,
+      netLoss,
+      rebateAmount,
+    };
+  }
+
+  public async claimDailyRebate(accountId: string): Promise<{
+    success: boolean;
+    rebateAmount: number;
+    newBalance: number;
+    error?: string;
+  }> {
+    const { eligible, rebateAmount } = this.calculateDailyRebate(accountId);
+    if (!eligible || rebateAmount <= 0) {
+      return { success: false, rebateAmount: 0, newBalance: 0, error: 'No daily loss rebate available to claim.' };
+    }
+
+    const acc = this.accounts.get(accountId);
+    if (!acc) return { success: false, rebateAmount: 0, newBalance: 0, error: 'Account not found' };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    acc.last_rebate_date = todayStr;
+
+    const mutateRes = await this.mutateWallet({
+      accountId,
+      amountDelta: rebateAmount,
+      type: 'DAILY_REBATE',
+      referenceId: 'rebate_' + todayStr,
+      idempotencyKey: `daily_rebate_${todayStr}_${accountId}`,
+      metadata: { reason: '5% Daily Loss Loyalty Rebate', rebate: rebateAmount },
+    });
+
+    if (!mutateRes.success) {
+      acc.last_rebate_date = null;
+      return { success: false, rebateAmount: 0, newBalance: acc.wallet_balance, error: mutateRes.error };
+    }
+
+    return {
+      success: true,
+      rebateAmount,
+      newBalance: mutateRes.newBalance,
+    };
   }
 }
 

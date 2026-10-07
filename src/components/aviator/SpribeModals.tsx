@@ -370,7 +370,7 @@ export const GameLimitsModal: React.FC<GameLimitsModalProps> = ({ isOpen, onClos
   );
 };
 
-// 6. Sign In / Account Switcher Modal
+// 6. Member Sign In Modal
 interface SignInModalProps {
   isOpen: boolean;
   currentAccountId: string;
@@ -380,19 +380,12 @@ interface SignInModalProps {
 
 export const SignInModal: React.FC<SignInModalProps> = ({
   isOpen,
-  currentAccountId,
   onSelectAccount,
   onClose,
 }) => {
   const [mobileOrId, setMobileOrId] = useState('');
 
   if (!isOpen) return null;
-
-  const demoAccounts = [
-    { id: 'acc_demo_pilot_01', label: 'Demo Pilot (VIP 1)' },
-    { id: 'pilot_high_roller_88', label: 'High Roller VIP' },
-    { id: 'pilot_lucky_ace_07', label: 'Lucky Ace' },
-  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -406,7 +399,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
       <div className="relative w-full max-w-sm bg-[#1b1c1d] border border-[#2a2b2e] rounded-2xl shadow-2xl p-5">
         <div className="flex items-center justify-between pb-3 border-b border-[#2a2b2e]">
-          <h3 className="text-base font-bold text-white tracking-wide">SIGN IN / SWITCH PILOT</h3>
+          <h3 className="text-base font-bold text-white tracking-wide">MEMBER SIGN IN</h3>
           <button
             onClick={onClose}
             className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-[#252528] transition-colors"
@@ -418,14 +411,14 @@ export const SignInModal: React.FC<SignInModalProps> = ({
         <form onSubmit={handleSubmit} className="py-4 space-y-3">
           <div>
             <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-              Mobile Number or Account ID
+              Registered 10-Digit Mobile Number
             </label>
             <input
               type="text"
-              placeholder="e.g. 9876543210 or acc_vip_01"
+              placeholder="e.g. 9876543210"
               value={mobileOrId}
               onChange={(e) => setMobileOrId(e.target.value)}
-              className="w-full px-3 py-2 bg-[#141516] border border-[#282a2e] rounded-xl text-white text-xs outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 bg-[#141516] border border-[#282a2e] rounded-xl text-white text-xs outline-none focus:border-emerald-500 font-mono"
             />
           </div>
 
@@ -433,36 +426,11 @@ export const SignInModal: React.FC<SignInModalProps> = ({
             type="submit"
             className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded-xl transition-colors shadow-md"
           >
-            Sign In / Continue
+            Verify & Enter
           </button>
-
-          <div className="pt-2 border-t border-[#282a2e]">
-            <span className="text-[10px] text-slate-400 font-bold block mb-1.5 uppercase">
-              Or Switch to Preset Pilot:
-            </span>
-            <div className="space-y-1">
-              {demoAccounts.map((acc) => (
-                <button
-                  type="button"
-                  key={acc.id}
-                  onClick={() => {
-                    onSelectAccount(acc.id);
-                    onClose();
-                  }}
-                  className={`w-full p-2 rounded-lg text-left text-xs transition-colors border ${
-                    currentAccountId === acc.id
-                      ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300 font-bold'
-                      : 'bg-[#141516] border-[#282a2e] text-slate-300 hover:bg-[#252528]'
-                  }`}
-                >
-                  <div className="font-bold">{acc.label}</div>
-                  <div className="text-[10px] text-slate-500 font-mono">{acc.id}</div>
-                </button>
-              ))}
-            </div>
-          </div>
         </form>
       </div>
     </div>
   );
 };
+

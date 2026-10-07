@@ -115,3 +115,28 @@ export async function fetchAllActivity(accountId: string): Promise<{
     ledger: data.ledger,
   };
 }
+
+export async function fetchCurrentAuthUser(): Promise<Account | null> {
+  const token = localStorage.getItem('apex_auth_token');
+  if (!token) return null;
+  try {
+    const res = await fetch('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.success && data.authenticated && data.account) {
+      return data.account;
+    }
+  } catch (err) {
+    console.warn('Failed to verify token:', err);
+  }
+  return null;
+}
+
+export async function logoutUser(): Promise<void> {
+  localStorage.removeItem('apex_auth_token');
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {}
+}
+

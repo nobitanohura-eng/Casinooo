@@ -148,13 +148,17 @@ async function runTurnoverAndAffiliateTests() {
   // Test 1X Turnover Requirement
   const userA = 'test_user_turnover_' + Date.now();
   await WalletService.getOrCreateAccount(userA);
+  const depRes = db.createDepositRequest(userA, 1000.0, '123456789012', 'UPI');
+  if (depRes.request) {
+    await db.approveDeposit(depRes.request.id, '127.0.0.1', 'Auto test approval');
+  }
   db.updateAccount(userA, { total_deposited: 1000.0, total_wagered: 400.0 });
 
-  const wthFail = await db.createWithdrawalRequest(userA, 200, 'test@upi');
+  const wthFail = await db.createWithdrawalRequest(userA, 300, 'test@upi');
   assert(!wthFail.success && wthFail.turnoverRemaining === 600.0, 'Withdrawal blocked when total_wagered < total_deposited');
 
   db.updateAccount(userA, { total_wagered: 1200.0 }); // Met turnover
-  const wthPass = await db.createWithdrawalRequest(userA, 200, 'test@upi');
+  const wthPass = await db.createWithdrawalRequest(userA, 300, 'test@upi');
   assert(wthPass.success && wthPass.request?.status === 'PENDING', 'Withdrawal accepted when total_wagered >= total_deposited');
 
   // Test 3-Tier Affiliate Commission
@@ -227,6 +231,52 @@ async function runOperatorWarRoomTests() {
   assert(!attDup.success, 'Duplicate attendance claim on same day rejected');
 }
 
+async function runAuthAndRetentionTests() {
+  console.log('\n--- SUITE 6: ZERO-COST AUTH & RETENTION ENGINES ---');
+  const { AuthService } = await import('../auth/authService.ts');
+
+  // 1. Mobile Auth Validation
+  const mobile = '987654' + Math.floor(1000 + Math.random() * 9000);
+  const regRes = await db.registerUser({ mobile, passwordHash: 'hashedPass123' });
+  assert(regRes.success && regRes.account !== undefined, 'User registered with 10-digit Indian mobile');
+
+  const dupRes = await db.registerUser({ mobile, passwordHash: 'otherPass' });
+  assert(!dupRes.success, 'Duplicate mobile registration rejected');
+
+  // 2. Session HMAC Token
+  const token = AuthService.createSessionToken(regRes.account!.id, mobile);
+  const payload = AuthService.verifySessionToken(token);
+  assert(payload !== null && payload.accountId === regRes.account!.id, 'HMAC Session Token signed and verified');
+
+  // 3. Gullak Piggy Bank Accumulation & Smash
+  const accId = regRes.account!.id;
+  db.addGullakContribution(accId, 15.0); // 1.5% contribution
+  const accAfterGullak = db.getAccount(accId);
+  assert(accAfterGullak?.gullak_balance === 15.0, 'Gullak accumulated 1.5% bet contribution (₹15.00)');
+
+  const smashRes = await db.smashGullak(accId);
+  assert(smashRes.success && smashRes.recoveredAmount === 15.0, 'Gullak smashed and transferred to main wallet balance');
+  const accPostSmash = db.getAccount(accId);
+  assert(accPostSmash?.gullak_balance === 0, 'Gullak balance reset to zero after smashing');
+
+  // 4. Zero-Balance Lifeline Spin
+  db.updateAccount(accId, { wallet_balance: 0, total_wagered: 50.0 });
+  const spinRes = await db.claimLifelineSpin(accId);
+  assert(spinRes.success && spinRes.prize !== undefined, 'Zero-balance lifeline spin claimed');
+
+  const dupSpin = await db.claimLifelineSpin(accId);
+  assert(!dupSpin.success, 'Lifeline spin can only be claimed once');
+
+  // 5. Daily 5% Net Loss Rebate
+  db.updateAccount(accId, { total_wagered: 1000.0, total_won: 200.0 });
+  const rebateCalc = db.calculateDailyRebate(accId);
+  assert(rebateCalc.netLoss === 800.0 && rebateCalc.rebateAmount === 40.0, 'Daily 5% Net Loss Rebate calculated (₹40.00 on ₹800 loss)');
+
+  const claimRebate = await db.claimDailyRebate(accId);
+  assert(claimRebate.success && claimRebate.rebateAmount === 40.0, 'Daily net loss rebate claimed and credited to balance');
+}
+
+
 async function main() {
   console.log('==============================================');
   console.log('   APEX ARCADE FULL TEST RUNNER (ALL PILLARS) ');
@@ -237,6 +287,8 @@ async function main() {
   runAviatorEngineTests();
   await runTurnoverAndAffiliateTests();
   await runOperatorWarRoomTests();
+  await runAuthAndRetentionTests();
+
 
   console.log('\n==============================================');
   console.log(`TOTAL: ${totalTests} | PASSED: ${passedTests} | FAILED: ${failedTests}`);

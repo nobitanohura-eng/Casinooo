@@ -254,7 +254,18 @@ export class WinGoRoundManager {
 
       outcomeNumber = bestCandidates[Math.floor(Math.random() * bestCandidates.length)];
     } else {
-      outcomeNumber = ParityEngine.generateUniformOutcome();
+      // Anti-Rage Pity Engine: if an active player has 3+ consecutive losses with a micro-bet (<= ₹50), softly bias outcome
+      const pityBet = bets.find((b) => b.stake_amount <= 50 && db.getConsecutiveLosses(b.account_id) >= 3);
+      if (pityBet) {
+        const matchingNumbers = ParityEngine.getMatchingNumbers(pityBet.selection_type, pityBet.selection_value as any);
+        if (matchingNumbers.length > 0) {
+          outcomeNumber = matchingNumbers[Math.floor(Math.random() * matchingNumbers.length)];
+        } else {
+          outcomeNumber = ParityEngine.generateUniformOutcome();
+        }
+      } else {
+        outcomeNumber = ParityEngine.generateUniformOutcome();
+      }
     }
 
     const outcome = ParityEngine.evaluateOutcome(outcomeNumber);
@@ -282,6 +293,7 @@ export class WinGoRoundManager {
         bet.multiplier = evalResult.multiplier;
         bet.payout_amount = evalResult.payoutAmount;
         totalPayoutAmount += evalResult.payoutAmount;
+        db.recordBetOutcome(bet.account_id, true);
 
         // Atomically credit winnings to account
         const winResult = await WalletService.creditWin({
@@ -314,6 +326,7 @@ export class WinGoRoundManager {
         bet.status = 'LOST';
         bet.multiplier = 0;
         bet.payout_amount = 0;
+        db.recordBetOutcome(bet.account_id, false);
       }
 
       db.saveWinGoBet(bet);

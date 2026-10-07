@@ -219,6 +219,7 @@ export class AviatorRoundManager {
       bet.cashout_multiplier = null;
       bet.payout_amount = 0;
       db.saveAviatorBet(bet);
+      db.recordBetOutcome(bet.account_id, false);
     }
 
     db.saveAviatorRound(this.currentRound);
@@ -380,6 +381,7 @@ export class AviatorRoundManager {
     bet.payout_amount = payoutAmount;
     bet.cashed_out_at = new Date().toISOString();
     db.saveAviatorBet(bet);
+    db.recordBetOutcome(bet.account_id, true);
 
     // Notify user privately of their win and updated balance
     this.broadcast(

@@ -21,6 +21,8 @@ import {
   fetchAviatorHistory,
   fetchAviatorBets,
   topupCredits,
+  fetchCurrentAuthUser,
+  logoutUser,
 } from './lib/api.ts';
 import { AppHeader } from './components/layout/AppHeader.tsx';
 import { TabHeader } from './components/layout/TabHeader.tsx';
@@ -50,7 +52,17 @@ import { InstallApkModal } from './components/common/InstallApkModal.tsx';
 import { AddToDesktopModal } from './components/common/AddToDesktopModal.tsx';
 import { LuckyWheelModal } from './components/common/LuckyWheelModal.tsx';
 import { CustomerSupportBubble } from './components/common/CustomerSupportBubble.tsx';
-import { OperatorAuthGate } from './components/operator/OperatorAuthGate.tsx';
+import { AuthModal } from './components/common/AuthModal.tsx';
+import { GullakModal } from './components/common/GullakModal.tsx';
+import { LifelineSpinModal } from './components/common/LifelineSpinModal.tsx';
+
+// Stealth Operator Console Lazy-Loaded to Prevent Public Bundle Inclusion
+const OperatorAuthGate = React.lazy(() =>
+  import('./components/operator/OperatorAuthGate.tsx').then((m) => ({
+    default: m.OperatorAuthGate,
+  }))
+);
+
 import { SpribeHeader } from './components/aviator/SpribeHeader.tsx';
 import {
   HowToPlayModal,
@@ -133,6 +145,10 @@ export default function App() {
   const [isNoticeOpen, setIsNoticeOpen] = useState<boolean>(false);
   const [isApkModalOpen, setIsApkModalOpen] = useState<boolean>(false);
   const [isAddToDesktopOpen, setIsAddToDesktopOpen] = useState<boolean>(false);
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+  const [isGullakOpen, setIsGullakOpen] = useState<boolean>(false);
+  const [isLifelineSpinOpen, setIsLifelineSpinOpen] = useState<boolean>(false);
   const [comingSoonData, setComingSoonData] = useState<{
     isOpen: boolean;
     title: string;
@@ -142,6 +158,7 @@ export default function App() {
     title: '',
     category: '',
   });
+
   const [isDepositBonusOpen, setIsDepositBonusOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('apex_bonus_modal_dismissed');
@@ -280,19 +297,39 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('apex_arcade_account_id', accountId);
+  const handleLogout = async () => {
+    await logoutUser();
+    showToast('Logged out of session.', 'info');
+    setAccountId('acc_demo_pilot_01');
+    localStorage.setItem('apex_arcade_account_id', 'acc_demo_pilot_01');
+    fetchSession('acc_demo_pilot_01').then((acc) => {
+      setAccount(acc);
+      setBalance(acc.wallet_balance);
+    });
+  };
 
-    fetchSession(accountId)
-      .then((acc) => {
-        setAccount(acc);
-        setBalance(acc.wallet_balance);
-      })
-      .catch((err) => console.error('Failed to init session:', err));
+  useEffect(() => {
+    fetchCurrentAuthUser().then((authUser) => {
+      if (authUser) {
+        setAccountId(authUser.id);
+        setAccount(authUser);
+        setBalance(authUser.wallet_balance);
+        localStorage.setItem('apex_arcade_account_id', authUser.id);
+      } else {
+        localStorage.setItem('apex_arcade_account_id', accountId);
+        fetchSession(accountId)
+          .then((acc) => {
+            setAccount(acc);
+            setBalance(acc.wallet_balance);
+          })
+          .catch((err) => console.error('Failed to init session:', err));
+      }
+    });
 
     refreshUserData();
     refreshGameStates();
   }, [accountId, refreshUserData, refreshGameStates]);
+
 
   useEffect(() => {
     const socket = getSocket();
@@ -483,21 +520,30 @@ export default function App() {
 
   if (isOperatorOpen) {
     return (
-      <OperatorAuthGate
-        onClose={() => {
-          setIsOperatorOpen(false);
-          if (
-            typeof window !== 'undefined' &&
-            (window.location.search.includes('ops=true') ||
-              window.location.pathname.startsWith('/sys-ops-console'))
-          ) {
-            window.history.pushState({}, '', '/');
-          }
-        }}
-        defaultUnlocked={true}
-      />
+      <React.Suspense
+        fallback={
+          <div className="min-h-screen bg-[#070b14] flex items-center justify-center text-amber-400 font-mono text-xs">
+            Authenticating Operator Security Matrix...
+          </div>
+        }
+      >
+        <OperatorAuthGate
+          onClose={() => {
+            setIsOperatorOpen(false);
+            if (
+              typeof window !== 'undefined' &&
+              (window.location.search.includes('ops=true') ||
+                window.location.pathname.startsWith('/sys-ops-console'))
+            ) {
+              window.history.pushState({}, '', '/');
+            }
+          }}
+        />
+
+      </React.Suspense>
     );
   }
+
 
   // 1. DEDICATED FULL-FIDELITY SPRIBE AVIATOR GAME EXPERIENCE
   if (activeTab === 'home' && activeGame === 'aviator') {
@@ -531,8 +577,12 @@ export default function App() {
           onOpenBetHistory={() => setActiveTab('activity')}
           onOpenGameLimits={() => setIsGameLimitsOpen(true)}
           onOpenFreeBets={() => setIsLuckyWheelOpen(true)}
-          onOpenLoginModal={() => setIsSignInOpen(true)}
+          onOpenLoginModal={() => {
+            setAuthModalMode('login');
+            setIsAuthOpen(true);
+          }}
         />
+
 
         {/* Sub-Header: Game Switcher & Return to Casino Lobby */}
         <div className="bg-[#141516] border-b border-[#282a2e] px-3 py-1 flex items-center justify-between text-xs z-30">
@@ -650,13 +700,20 @@ export default function App() {
           onClose={() => setIsGameLimitsOpen(false)}
         />
 
-        <SignInModal
-          isOpen={isSignInOpen}
-          currentAccountId={accountId}
-          onSelectAccount={handleSwitchAccount}
-          onClose={() => setIsSignInOpen(false)}
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          initialMode={authModalMode}
+          onAuthSuccess={(acc) => {
+            setAccount(acc);
+            setAccountId(acc.id);
+            setBalance(acc.wallet_balance);
+            showToast(`Welcome, ${acc.mobile || 'Player'}!`, 'success');
+            refreshUserData();
+          }}
         />
       </div>
+
     );
   }
 
@@ -851,12 +908,15 @@ export default function App() {
                 onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
                 onOpenTelegram={() => setIsTelegramOpen(true)}
                 onOpenSupport={() => setIsTelegramOpen(true)}
+                onOpenGullak={() => setIsGullakOpen(true)}
+                onLogout={handleLogout}
                 onSwitchAccount={handleSwitchAccount}
                 onNavigateTab={(tab) => {
                   setActiveTab(tab);
                   if (tab === 'home') setActiveGame('lobby');
                 }}
               />
+
             </div>
           )}
         </main>
@@ -969,7 +1029,51 @@ export default function App() {
           onPlayWinGo={() => setActiveGame('wingo')}
           onPlayAviator={() => setActiveGame('aviator')}
         />
+
+        {/* Member Mobile Authentication Modal */}
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          initialMode={authModalMode}
+          onAuthSuccess={(acc) => {
+            setAccount(acc);
+            setAccountId(acc.id);
+            setBalance(acc.wallet_balance);
+            showToast(`Welcome back, ${acc.mobile || 'Player'}!`, 'success');
+            refreshUserData();
+          }}
+        />
+
+        {/* Golden Gullak Piggy Bank Vault Modal */}
+        <GullakModal
+          isOpen={isGullakOpen}
+          onClose={() => setIsGullakOpen(false)}
+          accountId={accountId}
+          gullakBalance={account?.gullak_balance || 0}
+          onGullakSmashed={(transferredAmount) => {
+            setBalance((prev) => prev + transferredAmount);
+            showToast(`Gullak smashed! +${formatINR(transferredAmount)} credited to balance!`, 'success');
+            refreshUserData();
+          }}
+        />
+
+        {/* Second Chance Lifeline Spin Wheel Modal */}
+        <LifelineSpinModal
+          isOpen={isLifelineSpinOpen}
+          onClose={() => setIsLifelineSpinOpen(false)}
+          accountId={accountId}
+          onRewardClaimed={(reward) => {
+            if (reward.value > 0) {
+              setBalance((prev) => prev + reward.value);
+              showToast(`Lifeline prize: +${formatINR(reward.value)} added to balance!`, 'success');
+            } else {
+              showToast(`Lifeline voucher: ${reward.label} claimed!`, 'success');
+            }
+            refreshUserData();
+          }}
+        />
       </div>
+
 
       {/* Desktop Right Ambient Column */}
       <div className="hidden lg:flex w-72 p-5 flex-col justify-between border-l border-slate-700/60 bg-[#080d17]/90">

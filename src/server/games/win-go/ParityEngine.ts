@@ -59,6 +59,26 @@ export class ParityEngine {
   }
 
   /**
+   * Returns outcome numbers that satisfy a given selection for the Anti-Rage Pity Engine
+   */
+  public static getMatchingNumbers(selectionType: 'COLOR' | 'NUMBER' | 'SIZE', selectionValue: string): number[] {
+    if (selectionType === 'NUMBER') {
+      const n = parseInt(selectionValue, 10);
+      return n >= 0 && n <= 9 ? [n] : [];
+    }
+    if (selectionType === 'COLOR') {
+      if (selectionValue === 'RED') return [0, 2, 4, 6, 8];
+      if (selectionValue === 'GREEN') return [1, 3, 5, 7, 9];
+      if (selectionValue === 'VIOLET') return [0, 5];
+    }
+    if (selectionType === 'SIZE') {
+      if (selectionValue === 'SMALL') return [0, 1, 2, 3, 4];
+      if (selectionValue === 'BIG') return [5, 6, 7, 8, 9];
+    }
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  }
+
+  /**
    * Random integer outcome generation (0 through 9) using crypto/uniform distribution.
    */
   public static generateUniformOutcome(): number {
