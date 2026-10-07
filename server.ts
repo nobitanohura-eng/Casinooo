@@ -1,5 +1,6 @@
 import http from 'http';
 import path from 'path';
+import fs from 'fs';
 import express from 'express';
 import { Server as SocketIOServer } from 'socket.io';
 import dotenv from 'dotenv';
@@ -53,11 +54,40 @@ async function startServer() {
   } else {
     // In production, serve static assets from dist
     const distPath = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-    console.log('[Server] Serving production build from /dist');
+    const indexPath = path.join(distPath, 'index.html');
+
+    // Failsafe: If dist/index.html was not generated during build command, build it automatically
+    if (!fs.existsSync(indexPath)) {
+      console.log('[Server] Warning: dist/index.html not found! Triggering automated vite build...');
+      try {
+        const { execSync } = await import('child_process');
+        execSync('npx vite build', { stdio: 'inherit' });
+        console.log('[Server] Automated vite build finished successfully.');
+      } catch (buildErr) {
+        console.error('[Server] Automated build encountered an error:', buildErr);
+      }
+    }
+
+    if (fs.existsSync(indexPath)) {
+      app.use(express.static(distPath));
+      app.get('*', (_req, res) => {
+        res.sendFile(indexPath);
+      });
+      console.log('[Server] Serving production build from /dist');
+    } else {
+      // Emergency Fallback: Mount dynamic Vite instance if dist is somehow unavailable
+      console.log('[Server] Mounting dynamic Vite engine fallback...');
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: {
+          middlewareMode: true,
+          host: '0.0.0.0',
+          port: PORT,
+        },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    }
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
