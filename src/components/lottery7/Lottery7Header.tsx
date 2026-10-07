@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Volume2, RotateCw } from 'lucide-react';
+import { Download, Volume2, RotateCw, ShieldCheck, Sparkles } from 'lucide-react';
 import { formatINR } from '../../lib/formatters.ts';
 
 interface Lottery7HeaderProps {
@@ -10,6 +10,8 @@ interface Lottery7HeaderProps {
   activeCategory: string;
   onSelectCategory: (cat: string) => void;
   onOpenLuckyWheel: () => void;
+  onOpenNotice?: () => void;
+  onOpenApkModal?: () => void;
 }
 
 export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
@@ -20,6 +22,8 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
   activeCategory,
   onSelectCategory,
   onOpenLuckyWheel,
+  onOpenNotice,
+  onOpenApkModal,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -31,49 +35,67 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
   return (
     <div className="w-full">
-      {/* 1. Top Navbar */}
+      {/* 1. Top Navbar with Apex Arcade Brand */}
       <div className="l7-navbar">
-        <div className="l7-logo">
-          <img src="/assets/lottery7/logo.png" alt="Lottery 7" onError={(e) => {
-            (e.target as HTMLElement).style.display = 'none';
-          }} />
-          <div className="flex items-center gap-1">
-            <span className="l7-brand-text">LOTTERY</span>
-            <span className="l7-brand-badge">7</span>
-            <span className="text-[9px] font-bold text-slate-400 border border-slate-200 px-1 rounded ml-1">APEX</span>
+        <div className="flex items-center gap-2">
+          {/* Stylized Apex Shield Icon */}
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#f95959] via-[#ff7979] to-amber-400 flex items-center justify-center text-white font-black text-sm shadow-sm border border-white">
+            A
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-base font-black italic tracking-tight bg-gradient-to-r from-[#f95959] to-[#d93025] bg-clip-text text-transparent">
+              APEX
+            </span>
+            <span className="text-base font-black tracking-tight text-slate-800">
+              ARCADE
+            </span>
+            <span className="text-[8px] font-black bg-gradient-to-r from-amber-500 to-amber-600 text-white px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider">
+              OFFICIAL
+            </span>
           </div>
         </div>
 
         <div className="l7-nav-action">
           <button
-            onClick={() => alert('Download Lottery7 / Apex APK')}
-            className="p-1 rounded-full hover:bg-slate-100 transition-colors"
-            title="Download App"
+            onClick={onOpenApkModal}
+            className="p-1 rounded-full hover:bg-slate-100 transition-colors flex items-center gap-1 text-[#f95959]"
+            title="Download Android App"
+            aria-label="Download Android App"
           >
-            <Download className="l7-download-icon" />
+            <Download className="w-5 h-5 text-[#f95959]" />
+            <span className="text-[10px] font-bold hidden sm:inline">APP</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Top Banner Slider */}
+      {/* 2. Top Banner Slider (iPhone 17 Pro Max Lucky Spin) */}
       <div className="l7-banner-container">
-        <img
-          src="/assets/lottery7/banner-iphone.jpg"
-          alt="Lucky Spin iPhone 17 Pro"
-          className="l7-banner-img cursor-pointer"
+        <div
           onClick={onOpenLuckyWheel}
-        />
+          className="relative cursor-pointer group overflow-hidden rounded-xl"
+        >
+          <img
+            src="/assets/lottery7/banner-iphone.jpg"
+            alt="Lucky Spin iPhone 17 Pro"
+            className="l7-banner-img group-hover:scale-101 transition-transform duration-300"
+          />
+          {/* Subtle click me pill */}
+          <div className="absolute bottom-2.5 right-3 bg-slate-900/80 backdrop-blur-md text-amber-300 font-casino-num font-black text-[10px] px-2 py-0.5 rounded-full border border-amber-400/40 flex items-center gap-1 shadow-md">
+            <Sparkles className="w-3 h-3 text-amber-400 animate-spin" />
+            <span>TAP TO SPIN</span>
+          </div>
+        </div>
       </div>
 
-      {/* 3. Speaker Announcement Marquee */}
+      {/* 3. Speaker Announcement Marquee Bar */}
       <div className="l7-marquee-bar">
         <Volume2 className="l7-speaker-icon" />
         <div className="l7-marquee-content">
-          <span>All players registered on this platform must bind their bank card. Apex Official Guarantee!</span>
+          <span>Apex Arcade Official Guarantee: Instant 24/7 UPI settlements & fair certified gaming. High-multiplier Win Go 1Min & Aviator rounds are live!</span>
         </div>
         <button
-          onClick={() => alert('Apex Official Notice: Instant 24/7 UPI settlements & fair certified gaming.')}
-          className="l7-detail-btn"
+          onClick={onOpenNotice}
+          className="l7-detail-btn hover:brightness-105 active:scale-95 transition-all"
         >
           Detail
         </button>
@@ -99,22 +121,22 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
         </div>
 
         <div className="l7-wallet-actions">
-          <button onClick={onOpenWithdraw} className="l7-btn-withdraw">
+          <button onClick={onOpenWithdraw} className="l7-btn-withdraw active:scale-95 transition-transform">
             Withdraw
           </button>
-          <button onClick={onOpenDeposit} className="l7-btn-deposit">
+          <button onClick={onOpenDeposit} className="l7-btn-deposit active:scale-95 transition-transform">
             Deposit
           </button>
         </div>
       </div>
 
-      {/* 5. Category Navigation (Row 1: Top 3 Cards, Row 2: Bottom 5 Tabs) */}
+      {/* 5. Category Navigation */}
       <div className="l7-cat-section">
         {/* Top 3 High-Priority Cards */}
         <div className="l7-cat-top-row">
           <div
             onClick={() => onSelectCategory('popular')}
-            className={`l7-cat-card-top popular ${activeCategory === 'popular' ? 'ring-2 ring-blue-400' : ''}`}
+            className={`l7-cat-card-top popular cursor-pointer transition-all ${activeCategory === 'popular' ? 'ring-2 ring-blue-500 shadow-md scale-[1.02]' : 'hover:opacity-90'}`}
           >
             <img src="/assets/lottery7/cat-popular.png" alt="Popular" />
             <span>Popular</span>
@@ -122,7 +144,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
           <div
             onClick={() => onSelectCategory('lottery')}
-            className={`l7-cat-card-top lottery ${activeCategory === 'lottery' ? 'ring-2 ring-orange-400' : ''}`}
+            className={`l7-cat-card-top lottery cursor-pointer transition-all ${activeCategory === 'lottery' ? 'ring-2 ring-orange-500 shadow-md scale-[1.02]' : 'hover:opacity-90'}`}
           >
             <img src="/assets/lottery7/cat-lottery.png" alt="Lottery" />
             <span>Lottery</span>
@@ -130,7 +152,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
           <div
             onClick={() => onSelectCategory('minigames')}
-            className={`l7-cat-card-top minigames ${activeCategory === 'minigames' ? 'ring-2 ring-purple-400' : ''}`}
+            className={`l7-cat-card-top minigames cursor-pointer transition-all ${activeCategory === 'minigames' ? 'ring-2 ring-purple-500 shadow-md scale-[1.02]' : 'hover:opacity-90'}`}
           >
             <img src="/assets/lottery7/cat-minigames.png" alt="Mini games" />
             <span>Mini games</span>
@@ -141,7 +163,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
         <div className="l7-cat-bottom-row">
           <div
             onClick={() => onSelectCategory('slots')}
-            className={`l7-cat-item-bottom ${activeCategory === 'slots' ? 'bg-red-50 text-red-500' : ''}`}
+            className={`l7-cat-item-bottom cursor-pointer transition-all ${activeCategory === 'slots' ? 'bg-red-50 text-red-500 font-bold border-b-2 border-red-500' : 'hover:bg-slate-50'}`}
           >
             <img src="/assets/lottery7/cat-slots.png" alt="Slots" />
             <span>Slots</span>
@@ -149,7 +171,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
           <div
             onClick={() => onSelectCategory('fishing')}
-            className={`l7-cat-item-bottom ${activeCategory === 'fishing' ? 'bg-red-50 text-red-500' : ''}`}
+            className={`l7-cat-item-bottom cursor-pointer transition-all ${activeCategory === 'fishing' ? 'bg-red-50 text-red-500 font-bold border-b-2 border-red-500' : 'hover:bg-slate-50'}`}
           >
             <img src="/assets/lottery7/cat-fishing.png" alt="Fishing" />
             <span>Fishing</span>
@@ -157,7 +179,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
           <div
             onClick={() => onSelectCategory('pvc')}
-            className={`l7-cat-item-bottom ${activeCategory === 'pvc' ? 'bg-red-50 text-red-500' : ''}`}
+            className={`l7-cat-item-bottom cursor-pointer transition-all ${activeCategory === 'pvc' ? 'bg-red-50 text-red-500 font-bold border-b-2 border-red-500' : 'hover:bg-slate-50'}`}
           >
             <img src="/assets/lottery7/cat-pvc.png" alt="PVC" />
             <span>PVC</span>
@@ -165,7 +187,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
           <div
             onClick={() => onSelectCategory('sports')}
-            className={`l7-cat-item-bottom ${activeCategory === 'sports' ? 'bg-red-50 text-red-500' : ''}`}
+            className={`l7-cat-item-bottom cursor-pointer transition-all ${activeCategory === 'sports' ? 'bg-red-50 text-red-500 font-bold border-b-2 border-red-500' : 'hover:bg-slate-50'}`}
           >
             <img src="/assets/lottery7/cat-sports.png" alt="Sports" />
             <span>Sports</span>
@@ -173,7 +195,7 @@ export const Lottery7Header: React.FC<Lottery7HeaderProps> = ({
 
           <div
             onClick={() => onSelectCategory('casino')}
-            className={`l7-cat-item-bottom ${activeCategory === 'casino' ? 'bg-red-50 text-red-500' : ''}`}
+            className={`l7-cat-item-bottom cursor-pointer transition-all ${activeCategory === 'casino' ? 'bg-red-50 text-red-500 font-bold border-b-2 border-red-500' : 'hover:bg-slate-50'}`}
           >
             <img src="/assets/lottery7/cat-casino.png" alt="Casino" />
             <span>Casino</span>

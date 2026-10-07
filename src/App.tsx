@@ -43,6 +43,10 @@ import { TelegramVipModal } from './components/common/TelegramVipModal.tsx';
 import { VictoryModal } from './components/common/VictoryModal.tsx';
 import { InstallApkBanner } from './components/common/InstallApkBanner.tsx';
 import { DepositBonusModal } from './components/common/DepositBonusModal.tsx';
+import { ComingSoonModal } from './components/common/ComingSoonModal.tsx';
+import { ApexNoticeModal } from './components/common/ApexNoticeModal.tsx';
+import { InstallApkModal } from './components/common/InstallApkModal.tsx';
+import { AddToDesktopModal } from './components/common/AddToDesktopModal.tsx';
 import { LuckyWheelModal } from './components/common/LuckyWheelModal.tsx';
 import { CustomerSupportBubble } from './components/common/CustomerSupportBubble.tsx';
 import { OperatorAuthGate } from './components/operator/OperatorAuthGate.tsx';
@@ -125,6 +129,18 @@ export default function App() {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState<boolean>(false);
   const [isTelegramOpen, setIsTelegramOpen] = useState<boolean>(false);
   const [isLuckyWheelOpen, setIsLuckyWheelOpen] = useState<boolean>(false);
+  const [isNoticeOpen, setIsNoticeOpen] = useState<boolean>(false);
+  const [isApkModalOpen, setIsApkModalOpen] = useState<boolean>(false);
+  const [isAddToDesktopOpen, setIsAddToDesktopOpen] = useState<boolean>(false);
+  const [comingSoonData, setComingSoonData] = useState<{
+    isOpen: boolean;
+    title: string;
+    category: string;
+  }>({
+    isOpen: false,
+    title: '',
+    category: '',
+  });
   const [isDepositBonusOpen, setIsDepositBonusOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('apex_bonus_modal_dismissed');
@@ -529,7 +545,7 @@ export default function App() {
               onClick={() => setActiveGame('lobby')}
               className="px-2.5 py-0.5 rounded-full bg-[#1e2024] hover:bg-[#282a2e] text-slate-300 hover:text-white font-medium text-[10px] transition-colors"
             >
-              🏛️ Lottery 7 Lobby
+              🏛️ Apex Lobby
             </button>
 
             <button
@@ -765,6 +781,16 @@ export default function App() {
                   onOpenDepositBonus={() => setIsDepositBonusOpen(true)}
                   onOpenTelegram={() => setIsTelegramOpen(true)}
                   onOpenSupport={() => setIsTelegramOpen(true)}
+                  onOpenNotice={() => setIsNoticeOpen(true)}
+                  onOpenApkModal={() => setIsApkModalOpen(true)}
+                  onOpenComingSoon={(title, category) => {
+                    setComingSoonData({
+                      isOpen: true,
+                      title,
+                      category,
+                    });
+                  }}
+                  onOpenAddToDesktop={() => setIsAddToDesktopOpen(true)}
                 />
               )}
 
@@ -888,6 +914,52 @@ export default function App() {
           game={victoryData.game}
           details={victoryData.details}
           multiplier={victoryData.multiplier}
+        />
+
+        {/* Official Apex Security Notice Modal */}
+        <ApexNoticeModal
+          isOpen={isNoticeOpen}
+          onClose={() => setIsNoticeOpen(false)}
+        />
+
+        {/* Official Android APK Download & ₹50 Bonus Modal */}
+        <InstallApkModal
+          isOpen={isApkModalOpen}
+          onClose={() => setIsApkModalOpen(false)}
+          onClaimBonus={(bonus) => {
+            handleTopUp(bonus);
+            setVictoryData({
+              isOpen: true,
+              amount: bonus,
+              game: 'Win Go 1Min',
+              details: 'Official Android APK Installation Bonus',
+            });
+          }}
+        />
+
+        {/* Add to Desktop Guide & ₹25 Bonus Modal */}
+        <AddToDesktopModal
+          isOpen={isAddToDesktopOpen}
+          onClose={() => setIsAddToDesktopOpen(false)}
+          onRewardClaimed={(bonus) => {
+            handleTopUp(bonus);
+            setVictoryData({
+              isOpen: true,
+              amount: bonus,
+              game: 'Win Go 1Min',
+              details: 'Add to Home Screen Bonus',
+            });
+          }}
+        />
+
+        {/* Upcoming Game Under Audit Modal with Direct Play Switchers */}
+        <ComingSoonModal
+          isOpen={comingSoonData.isOpen}
+          gameTitle={comingSoonData.title}
+          gameCategory={comingSoonData.category}
+          onClose={() => setComingSoonData((prev) => ({ ...prev, isOpen: false }))}
+          onPlayWinGo={() => setActiveGame('wingo')}
+          onPlayAviator={() => setActiveGame('aviator')}
         />
       </div>
 

@@ -39,9 +39,9 @@ export const WinGoView: React.FC<WinGoViewProps> = ({
           </button>
           <div>
             <h1 className="font-casino-num font-black text-sm tracking-wide text-white flex items-center gap-1.5">
-              <span>WIN GO 1MIN</span>
-              <span className="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-1.5 py-0.2 rounded font-bold">
-                LOTTERY 7
+              <span>APEX WIN GO 1MIN</span>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-bold">
+                LIVE
               </span>
             </h1>
             <span className="text-[10px] text-slate-400 font-casino-num">
