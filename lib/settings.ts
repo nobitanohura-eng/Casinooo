@@ -5,7 +5,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   global_email_paused: process.env.GLOBAL_EMAIL_PAUSED !== 'false',
   daily_send_limit: 25,
   company_profile: {
-    name: 'Papa Transport Services',
+    name: 'NCR Transport Logistics',
     phone: '+91 98110 00000',
     base_city: 'Noida',
     service_area: 'Noida–Delhi NCR',

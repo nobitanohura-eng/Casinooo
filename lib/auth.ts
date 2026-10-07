@@ -32,7 +32,7 @@ export async function requireUser(): Promise<AuthResult> {
 
     return {
       error: null,
-      user: { id: 'test-user-id', email: testEmail, name: 'Papa Transport Owner', role: 'owner' },
+      user: { id: 'test-user-id', email: testEmail, name: 'NCR Transport Owner', role: 'owner' },
     };
   }
 

@@ -13,7 +13,7 @@ export default async function UnsubscribePage({ params }: { params: Promise<{ to
 
         <div className="flex items-center justify-center gap-2 text-indigo-600 font-semibold text-xs tracking-wider uppercase mb-2">
           <Truck size={16} />
-          Papa Transport Services · Noida NCR
+          NCR Transport Logistics · Noida NCR
         </div>
 
         <h1 className="text-2xl font-bold tracking-tight text-[#172033] mb-3">
@@ -30,7 +30,7 @@ export default async function UnsubscribePage({ params }: { params: Promise<{ to
         </div>
 
         <div className="text-xs text-slate-400 border-t border-slate-100 pt-4">
-          <p>Papa Transport Leads · Local B2B Commercial Vehicle Logistics · Delhi NCR</p>
+          <p>NCR Transport Logistics · Local B2B Commercial Vehicle Logistics · Delhi NCR</p>
         </div>
       </div>
     </main>

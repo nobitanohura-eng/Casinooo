@@ -122,7 +122,7 @@ export async function sendEmailMessage(options: SendEmailOptions): Promise<SendE
     // ignore
   }
 
-  const senderName = process.env.COMPANY_NAME || 'Papa Transport Services';
+  const senderName = process.env.COMPANY_NAME || 'NCR Transport Logistics';
 
   // 1. GMAIL SMTP (from DB or ENV)
   const gmailUser = dbConfig?.gmail_user || process.env.GMAIL_USER || process.env.SMTP_USER;

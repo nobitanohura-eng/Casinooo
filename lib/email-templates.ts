@@ -34,7 +34,7 @@ export function formatEmailBodyToHtml(textBody: string, optoutUrl: string): stri
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f7fb; margin: 0; padding: 24px;">
   <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #e7ebf2; border-radius: 12px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div style="border-bottom: 2px solid #3659e3; padding-bottom: 12px; margin-bottom: 24px;">
-      <span style="font-size: 13px; font-weight: 700; color: #3659e3; letter-spacing: 0.5px; text-transform: uppercase;">Papa Transport Services · Noida NCR</span>
+      <span style="font-size: 13px; font-weight: 700; color: #3659e3; letter-spacing: 0.5px; text-transform: uppercase;">NCR Transport Logistics · Noida NCR</span>
     </div>
     ${paragraphs}
     <div style="margin-top: 36px; padding-top: 20px; border-top: 1px solid #e7ebf2; font-size: 12px; color: #748096; line-height: 1.5;">
@@ -103,7 +103,7 @@ Agar aapko cartons, packaging material ya local dispatch ke liye regular ya trip
 Hum aapke route aur transport rates discuss karne ke liye uplabdh hain.
 
 Dhanyawaad,
-Papa Transport Services
+NCR Transport Logistics
 ${city}
 
 ---
@@ -136,7 +136,7 @@ Our vehicle is available for export carton dispatches, washing unit transfers, a
 If you have an immediate or upcoming requirement, please share your preferred route and timings.
 
 Regards,
-Papa Transport Services
+NCR Transport Logistics
 ${city}
 
 ---

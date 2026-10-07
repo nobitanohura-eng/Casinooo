@@ -1,4 +1,4 @@
-// Autonomous AI Lead Scout for Papa Transport
+// Autonomous AI Lead Scout for NCR Transport Logistics
 // Generates verified B2B transport leads across Delhi NCR using OpenAI / Gemini / Smart Built-in Hub Engine
 // Handles duplicate checking, auto-drafting outreach, and scheduling follow-ups.
 
@@ -442,7 +442,7 @@ export async function runAiLeadScout(options: ScoutOptions = {}) {
       ]);
     }
 
-    // 4. Auto-schedule click-to-call follow-up for Papa
+    // 4. Auto-schedule click-to-call follow-up for driver / owner
     if (options.auto_followup !== false) {
       const scheduledDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // Tomorrow
       await db.from('follow_ups').insert([
@@ -465,7 +465,7 @@ export async function runAiLeadScout(options: ScoutOptions = {}) {
         company: lead.company_name,
         route: lead.route_area,
         estimated_value: lead.estimated_value,
-        agent: 'Papa AI Scout v1.0',
+        agent: 'NCR AI Scout v1.0',
       },
       actor: '🤖 AI Scout Agent',
     });

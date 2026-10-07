@@ -43,13 +43,35 @@ export default function SmsGatewayTab() {
   const [testConfirmed, setTestConfirmed] = useState(false);
   const [testSending, setTestSending] = useState(false);
 
+  // Direct Android Phone Gateway App State (From User's Phone: sms-gate.app)
+  const [phoneGatewayHealth, setPhoneGatewayHealth] = useState<{
+    online: boolean;
+    battery: number | null;
+    charging: boolean;
+    version: string | null;
+    statusText: string;
+    latencyMs: number;
+    baseUrl: string;
+  } | null>(null);
+  const [phoneGatewayConfig, setPhoneGatewayConfig] = useState<{
+    baseUrl: string;
+    username: string;
+    simNumber: number;
+    enabled: boolean;
+  } | null>(null);
+  const [isPhoneConfigModalOpen, setIsPhoneConfigModalOpen] = useState(false);
+  const [phoneIpInput, setPhoneIpInput] = useState('http://10.108.104.59:8080');
+  const [phoneUserInput, setPhoneUserInput] = useState('sms');
+  const [phonePassInput, setPhonePassInput] = useState('Tz3tO82d');
+  const [phoneSimInput, setPhoneSimInput] = useState(1);
+
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     loadGatewayData();
-    const interval = setInterval(loadGatewayData, 10000); // 10s auto refresh
+    const interval = setInterval(loadGatewayData, 8000); // 8s auto refresh
     return () => clearInterval(interval);
   }, []);
 
@@ -66,6 +88,24 @@ export default function SmsGatewayTab() {
       setActiveDevice(data.active_device);
       setTemplates(data.templates);
       setJobs(data.recent_jobs);
+
+      // Fetch Direct Phone Gateway Status
+      try {
+        const pgRes = await fetch('/api/sms/phone-gateway');
+        if (pgRes.ok) {
+          const pgData = await pgRes.json();
+          setPhoneGatewayHealth(pgData.health);
+          setPhoneGatewayConfig(pgData.config);
+          if (pgData.rawConfig) {
+            setPhoneIpInput(pgData.rawConfig.baseUrl || 'http://10.108.104.59:8080');
+            setPhoneUserInput(pgData.rawConfig.username || 'sms');
+            setPhoneSimInput(pgData.rawConfig.simNumber || 1);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load phone gateway:', e);
+      }
+
       setError('');
     } catch (err: any) {
       console.error('Failed to load SMS gateway:', err);
@@ -146,6 +186,33 @@ export default function SmsGatewayTab() {
     }
   }
 
+  async function handleSavePhoneConfig() {
+    setBusy(true);
+    try {
+      const res = await fetch('/api/sms/phone-gateway', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          baseUrl: phoneIpInput.trim(),
+          username: phoneUserInput.trim(),
+          password: phonePassInput.trim(),
+          simNumber: Number(phoneSimInput),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPhoneGatewayHealth(data.health);
+      setPhoneGatewayConfig(data.config);
+      setNotice('Phone SMS Gateway configuration saved!');
+      setIsPhoneConfigModalOpen(false);
+      setTimeout(() => setNotice(''), 4000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleSendTestSms() {
     if (!testConfirmed) {
       setError('Please check the confirmation box before sending test SMS.');
@@ -154,6 +221,28 @@ export default function SmsGatewayTab() {
     setTestSending(true);
     setError('');
     try {
+      if (phoneGatewayHealth?.online) {
+        const res = await fetch('/api/sms/phone-gateway', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: testPhone,
+            message: `[Test SMS] NCR Transport Logistics Gateway verification. Sent from your Android Phone SIM on ${new Date().toLocaleTimeString('en-IN')}.`,
+            simNumber: phoneSimInput,
+            confirm: true,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        setNotice(`✓ SMS dispatched directly through your Android phone! Message ID: ${data.messageId}`);
+        setIsTestModalOpen(false);
+        setTestPhone('');
+        setTestConfirmed(false);
+        loadGatewayData();
+        return;
+      }
+
       const res = await fetch('/api/sms/test', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -288,25 +377,98 @@ export default function SmsGatewayTab() {
 
       {/* DEVICE STATUS & METRICS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1: Paired Device Status */}
+        {/* Card 1: Connected Phone Status (Direct Android Gateway or Paired Companion) */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <span>Paired Android Phone</span>
+            <span>Connected Android Phone</span>
             <span
               className={`flex items-center gap-1.5 font-bold ${
-                activeDevice ? 'text-emerald-600' : 'text-slate-400'
+                phoneGatewayHealth?.online || activeDevice ? 'text-emerald-600' : 'text-slate-400'
               }`}
             >
               <span
                 className={`w-2 h-2 rounded-full ${
-                  activeDevice ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
+                  phoneGatewayHealth?.online || activeDevice ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
                 }`}
               />
-              {activeDevice ? 'Online' : 'No Phone Connected'}
+              {phoneGatewayHealth?.online || activeDevice ? 'Online & Ready' : 'No Phone Connected'}
             </span>
           </div>
 
-          {activeDevice ? (
+          {phoneGatewayHealth?.online ? (
+            <div className="space-y-2">
+              <div className="font-extrabold text-slate-900 text-base flex items-center justify-between">
+                <span>Android SMS Gateway</span>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Direct SIM Active
+                </span>
+              </div>
+              <div className="text-xs text-slate-500 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>Server IP:</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {phoneGatewayHealth.baseUrl.replace('http://', '')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Active SIM Slot:</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newSlot = phoneSimInput === 1 ? 2 : 1;
+                        setPhoneSimInput(newSlot);
+                        fetch('/api/sms/phone-gateway', {
+                          method: 'PATCH',
+                          headers: { 'content-type': 'application/json' },
+                          body: JSON.stringify({ simNumber: newSlot }),
+                        });
+                        setNotice(`Switched default to SIM ${newSlot}`);
+                        setTimeout(() => setNotice(''), 3000);
+                      }}
+                      className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded text-[11px] border border-blue-200 transition"
+                      title="Click to toggle SIM 1 / SIM 2"
+                    >
+                      SIM {phoneSimInput} (Click to toggle)
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Battery Level:</span>
+                  <span className="font-semibold text-slate-800 flex items-center gap-1">
+                    {phoneGatewayHealth.charging ? (
+                      <BatteryCharging size={14} className="text-emerald-500" />
+                    ) : (
+                      <Battery size={14} />
+                    )}
+                    {phoneGatewayHealth.battery ?? '—'}% {phoneGatewayHealth.charging ? '(Charging)' : ''}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Connection:</span>
+                  <span className="font-semibold text-emerald-600">
+                    Active Wi-Fi ({phoneGatewayHealth.latencyMs}ms)
+                  </span>
+                </div>
+              </div>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTestModalOpen(true)}
+                  className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition text-center"
+                >
+                  Send Test SMS
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPhoneConfigModalOpen(true)}
+                  className="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                >
+                  Config
+                </button>
+              </div>
+            </div>
+          ) : activeDevice ? (
             <div className="space-y-2">
               <div className="font-extrabold text-slate-900 text-base">
                 {activeDevice.device_name}
@@ -342,14 +504,22 @@ export default function SmsGatewayTab() {
           ) : (
             <div className="py-4 text-center space-y-2">
               <p className="text-xs text-slate-500">
-                No active companion phone detected. Click Pair below to connect your Android phone.
+                Phone Gateway not responding or disconnected. Check if SMS Gateway service is running on phone.
               </p>
-              <button
-                onClick={handleStartPairing}
-                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-lg transition"
-              >
-                Connect Phone Now
-              </button>
+              <div className="flex items-center justify-center gap-2 pt-1">
+                <button
+                  onClick={() => setIsPhoneConfigModalOpen(true)}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition"
+                >
+                  Edit Phone IP
+                </button>
+                <button
+                  onClick={handleStartPairing}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-lg transition"
+                >
+                  Pairing PIN
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -427,7 +597,7 @@ export default function SmsGatewayTab() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[
-            { id: 'manual_approval_sms', label: 'Manual Approval Before SMS', desc: 'Prepares SMS draft; requires Papa to tap approve before dispatch.' },
+            { id: 'manual_approval_sms', label: 'Manual Approval Before SMS', desc: 'Prepares SMS draft; requires owner to tap approve before dispatch.' },
             { id: 'email_then_sms', label: 'Email Followed By SMS', desc: 'Day 0 initial email; Day 2 follow-up; Day 4 SMS if no reply.' },
             { id: 'auto_sms', label: 'Automatic SMS for Eligible Leads', desc: 'Dispatches SMS immediately when lead is approved.' },
           ].map((mode) => (
@@ -650,7 +820,7 @@ export default function SmsGatewayTab() {
                   <span>Mandatory Explicit Safeguard</span>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  Papa Transport Leads never silently messages real customer leads. This test will ONLY send a single diagnostic confirmation message to the number you specified.
+                  NCR Transport Leads never silently messages real customer leads. This test will ONLY send a single diagnostic confirmation message to the number you specified.
                 </p>
               </div>
 
@@ -673,6 +843,102 @@ export default function SmsGatewayTab() {
               >
                 {testSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 <span>Send Verified Test SMS</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: DIRECT ANDROID PHONE GATEWAY CONFIGURATION */}
+      {isPhoneConfigModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                <Sliders size={18} className="text-blue-600" />
+                <span>Android Phone Gateway Settings</span>
+              </div>
+              <button onClick={() => setIsPhoneConfigModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Phone Local Address / URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="http://10.108.104.59:8080"
+                  value={phoneIpInput}
+                  onChange={(e) => setPhoneIpInput(e.target.value)}
+                  className="w-full text-xs p-3 font-mono bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+                <span className="text-[11px] text-slate-400">As shown in your SMS Gateway app on your phone</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={phoneUserInput}
+                    onChange={(e) => setPhoneUserInput(e.target.value)}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:bg-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={phonePassInput}
+                    onChange={(e) => setPhonePassInput(e.target.value)}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:bg-white focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Dispatch Physical SIM
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPhoneSimInput(1)}
+                    className={`py-2 text-xs font-bold rounded-xl border transition ${
+                      phoneSimInput === 1
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    SIM 1 (Primary)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPhoneSimInput(2)}
+                    className={`py-2 text-xs font-bold rounded-xl border transition ${
+                      phoneSimInput === 2
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    SIM 2 (Secondary)
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleSavePhoneConfig}
+                disabled={busy}
+                className="w-full py-2.5 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-sm transition"
+              >
+                Save Phone Gateway Settings
               </button>
             </div>
           </div>

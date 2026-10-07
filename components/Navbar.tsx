@@ -91,7 +91,7 @@ export default function Navbar({
             </div>
             <div>
               <div className="font-extrabold text-base tracking-tight text-[#172033]">
-                Papa Transport
+                NCR Transport
               </div>
               <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
                 Delhi NCR Logistics
@@ -175,7 +175,7 @@ export default function Navbar({
           <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#3659e3] flex items-center justify-center">
             <Truck size={18} />
           </div>
-          <span className="font-extrabold text-sm text-[#172033]">Papa Transport</span>
+          <span className="font-extrabold text-sm text-[#172033]">NCR Transport Leads</span>
         </div>
         <button
           onClick={onLogout}

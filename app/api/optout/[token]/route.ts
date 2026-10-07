@@ -48,7 +48,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ token: string }
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Unsubscribed — Papa Transport Services</title>
+  <title>Unsubscribed — NCR Transport Logistics</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fb; color: #172033; margin: 0; padding: 24px; display: grid; place-items: center; min-height: 80vh; }
     .card { background: #fff; border: 1px solid #e7ebf2; border-radius: 16px; max-width: 520px; width: 100%; padding: 36px 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); text-align: center; }
@@ -63,9 +63,9 @@ export async function GET(req: Request, ctx: { params: Promise<{ token: string }
   <div class="card">
     <div class="icon">✓</div>
     <h1>You have been unsubscribed</h1>
-    <p>Your email address has been permanently added to our suppression list. You will not receive any further transport outreach from <strong>Papa Transport Services</strong>.</p>
+    <p>Your email address has been permanently added to our suppression list. You will not receive any further transport outreach from <strong>NCR Transport Logistics</strong>.</p>
     <div class="badge">Suppression active</div>
-    <div class="footer">Papa Transport Services · Noida NCR · B2B Local Commercial Goods Movement</div>
+    <div class="footer">NCR Transport Logistics · Noida NCR · B2B Local Commercial Goods Movement</div>
   </div>
 </body>
 </html>`;

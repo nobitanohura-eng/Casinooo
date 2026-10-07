@@ -29,12 +29,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const testSubject = '🚚 Test Verification: Papa Transport Outreach Gateway';
-    const testText = `Hello! This is a test verification email from Papa Transport Leads.\n\nYour outgoing email service is configured and operational.\nProvider: ${emailConfig.provider}\nSent from: ${emailConfig.fromEmail}\nTimestamp: ${new Date().toLocaleString('en-IN')}`;
+    const testSubject = '🚚 Test Verification: NCR Transport Logistics';
+    const testText = `Hello! This is a test verification email from NCR Transport Logistics.\n\nYour outgoing email service is configured and operational.\nProvider: ${emailConfig.provider}\nSent from: ${emailConfig.fromEmail}\nTimestamp: ${new Date().toLocaleString('en-IN')}`;
     const testHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 540px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
         <div style="display: flex; align-items: center; margin-bottom: 16px;">
-          <h2 style="margin: 0; color: #1e293b; font-size: 20px;">Papa Transport Leads</h2>
+          <h2 style="margin: 0; color: #1e293b; font-size: 20px;">NCR Transport Logistics</h2>
         </div>
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
           <p style="margin: 0; color: #166534; font-weight: 600; font-size: 14px;">✓ Outgoing Email Delivery Confirmed!</p>

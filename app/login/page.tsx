@@ -44,7 +44,7 @@ export default function Login() {
             <Truck size={26} />
           </div>
           <div>
-            <b className="text-xl font-extrabold text-[#172033] block tracking-tight">Papa Transport</b>
+            <b className="text-xl font-extrabold text-[#172033] block tracking-tight">NCR Transport</b>
             <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase block">
               DELHI NCR LOGISTICS CRM
             </span>

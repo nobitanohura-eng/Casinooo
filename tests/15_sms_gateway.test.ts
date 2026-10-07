@@ -7,6 +7,7 @@ import { POST as reportJob } from '@/app/api/sms/device/report/route';
 import { POST as createSmsJob } from '@/app/api/sms/jobs/route';
 import { POST as testSms } from '@/app/api/sms/test/route';
 import { POST as revokeDevice } from '@/app/api/sms/devices/[id]/revoke/route';
+import { GET as getPhoneGateway, PATCH as patchPhoneGateway, POST as postPhoneGateway } from '@/app/api/sms/phone-gateway/route';
 import { updateSmsSettings } from '@/lib/sms';
 import { globalMockDb } from '@/lib/mock-db';
 
@@ -156,5 +157,42 @@ describe('15. Android Phone + SIM SMS Gateway', () => {
       })
     );
     expect(pollRes.status).toBe(401);
+  });
+
+  it('handles direct Android Phone SMS Gateway config, health, and confirmation check', async () => {
+    // 1. GET phone gateway status
+    const getRes = await getPhoneGateway();
+    expect(getRes.status).toBe(200);
+    const getData = await getRes.json();
+    expect(getData.config).toBeDefined();
+    expect(getData.health).toBeDefined();
+
+    // 2. PATCH phone gateway config (update SIM slot)
+    const patchRes = await patchPhoneGateway(
+      new Request('http://localhost:3000/api/sms/phone-gateway', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ simNumber: 2 }),
+      })
+    );
+    expect(patchRes.status).toBe(200);
+    const patchData = await patchRes.json();
+    expect(patchData.config.simNumber).toBe(2);
+
+    // 3. POST direct SMS rejects without explicit confirmation
+    const rejectRes = await postPhoneGateway(
+      new Request('http://localhost:3000/api/sms/phone-gateway', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: '+91 98110 00000',
+          message: 'Test message',
+          confirm: false,
+        }),
+      })
+    );
+    expect(rejectRes.status).toBe(400);
+    const rejectData = await rejectRes.json();
+    expect(rejectData.error).toContain('Explicit user confirmation is required');
   });
 });

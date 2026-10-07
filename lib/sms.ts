@@ -24,7 +24,7 @@ export const DEFAULT_SMS_TEMPLATES: SmsTemplate[] = [
     language: 'hinglish',
     category: 'Commercial Transport',
     template_text:
-      'Namaste ji, Papa Transport Noida se. Hamara Tata Ace Gold Chota Hathi Noida-Delhi NCR factory dispatch ke liye available hai. Per-trip & regular rates ke liye sampark karein: +91 98110 00000. Stop lkr reply kre opt-out k liye.',
+      'Namaste ji, NCR Transport Logistics Noida se. Hamara Tata Ace Gold Chota Hathi Noida-Delhi NCR factory dispatch ke liye available hai. Per-trip & regular rates ke liye sampark karein: +91 98110 00000. Stop lkr reply kre opt-out k liye.',
   },
   {
     id: 'tata_ace_followup_hinglish',
@@ -32,7 +32,7 @@ export const DEFAULT_SMS_TEMPLATES: SmsTemplate[] = [
     language: 'hinglish',
     category: 'Follow-up',
     template_text:
-      'Namaste, Papa Transport se follow-up. Kya aapka local goods movement consignments schedule ho gaya? Safe load & on-time delivery ke liye call karein: +91 98110 00000.',
+      'Namaste, NCR Transport Logistics se follow-up. Kya aapka local goods movement consignments schedule ho gaya? Safe load & on-time delivery ke liye call karein: +91 98110 00000.',
   },
   {
     id: 'tata_ace_quote_english',
@@ -40,7 +40,7 @@ export const DEFAULT_SMS_TEMPLATES: SmsTemplate[] = [
     language: 'english',
     category: 'Direct Offer',
     template_text:
-      'Greetings! Papa Transport Services offers dedicated Tata Ace Gold for local Delhi NCR industrial cargo delivery. Contact +91 98110 00000 for competitive trip rates.',
+      'Greetings! NCR Transport Logistics offers dedicated Tata Ace Gold for local Delhi NCR industrial cargo delivery. Contact +91 98110 00000 for competitive trip rates.',
   },
 ];
 

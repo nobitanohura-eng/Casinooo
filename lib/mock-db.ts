@@ -47,7 +47,7 @@ const DEFAULT_SETTINGS = [
   {
     key: 'company_profile',
     value: {
-      name: 'Papa Transport Services',
+      name: 'NCR Transport Logistics',
       phone: '+91 98110 00000',
       base_city: 'Noida',
       service_area: 'Noida–Delhi NCR',

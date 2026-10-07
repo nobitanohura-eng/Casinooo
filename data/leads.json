@@ -672,13 +672,39 @@
       "description": "Global email pause set to: ACTIVE",
       "actor": "owner@papatransport.com",
       "metadata": null
+    },
+    {
+      "id": "lead_1791400118033_jvl7oq7",
+      "optout_token": "token_1791400118033_6va412h",
+      "created_at": "2026-10-07T19:08:38.033Z",
+      "updated_at": "2026-10-07T19:08:38.033Z",
+      "lead_id": null,
+      "action": "settings_updated",
+      "description": "Email configuration updated (provider: gmail)",
+      "actor": "owner@papatransport.com",
+      "metadata": null
+    },
+    {
+      "id": "lead_1791400148734_ok8cisa",
+      "optout_token": "token_1791400148734_tiy6t0f",
+      "created_at": "2026-10-07T19:09:08.734Z",
+      "updated_at": "2026-10-07T19:09:08.734Z",
+      "lead_id": null,
+      "action": "settings_updated",
+      "description": "Email configuration updated (provider: gmail)",
+      "actor": "owner@papatransport.com",
+      "metadata": null
     }
   ],
   "app_settings": [
     {
-      "key": "global_email_paused",
-      "value": false,
-      "updated_at": "2026-10-07T18:38:45.290Z"
+      "key": "sms_pairing_368980",
+      "value": {
+        "pin": "368980",
+        "expires_at": "2026-10-07T19:28:53.867Z",
+        "created_at": "2026-10-07T19:18:53.867Z"
+      },
+      "updated_at": "2026-10-07T19:18:53.867Z"
     },
     {
       "key": "daily_send_limit",
@@ -693,6 +719,72 @@
         "service_area": "Noida–Delhi NCR",
         "vehicle_type": "Tata Ace Gold (Chota Hathi)"
       }
+    },
+    {
+      "id": "rec_1791400118030_drqwn5o",
+      "created_at": "2026-10-07T19:08:38.030Z",
+      "key": "smtp_config",
+      "value": {
+        "provider": "gmail",
+        "gmail_user": "avinashkr502080@gmail.com",
+        "gmail_app_password": "xcre vbgq wgqs ukzo",
+        "resend_api_key": "",
+        "resend_from_email": ""
+      },
+      "updated_at": "2026-10-07T19:09:08.732Z"
+    },
+    {
+      "id": "lead_1791400699451_4urs1wj",
+      "optout_token": "token_1791400699451_aoisjm3",
+      "created_at": "2026-10-07T19:18:19.451Z",
+      "updated_at": "2026-10-07T19:18:19.451Z",
+      "key": "sms_gateway_settings",
+      "value": {
+        "enabled": false,
+        "daily_limit": 50,
+        "sent_today": 0,
+        "min_delay_seconds": 15,
+        "followup_mode": "manual_approval_sms",
+        "day0_channel": "email",
+        "day2_delay_days": 2,
+        "day4_delay_days": 4,
+        "dlt_disclaimer_acknowledged": false,
+        "test_phone_number": ""
+      }
     }
-  ]
+  ],
+  "sms_templates": [
+    {
+      "id": "tata_ace_intro_hinglish",
+      "optout_token": "token_1791400480238_2lr0rg7",
+      "created_at": "2026-10-07T19:14:40.238Z",
+      "updated_at": "2026-10-07T19:14:40.239Z",
+      "name": "Tata Ace Gold Quick Pitch (Hinglish)",
+      "language": "hinglish",
+      "category": "Commercial Transport",
+      "template_text": "Namaste ji, Papa Transport Noida se. Hamara Tata Ace Gold Chota Hathi Noida-Delhi NCR factory dispatch ke liye available hai. Per-trip & regular rates ke liye sampark karein: +91 98110 00000. Stop lkr reply kre opt-out k liye."
+    },
+    {
+      "id": "tata_ace_followup_hinglish",
+      "optout_token": "token_1791400480241_ukc03ua",
+      "created_at": "2026-10-07T19:14:40.241Z",
+      "updated_at": "2026-10-07T19:14:40.241Z",
+      "name": "Delivery Follow-up (Hinglish)",
+      "language": "hinglish",
+      "category": "Follow-up",
+      "template_text": "Namaste, Papa Transport se follow-up. Kya aapka local goods movement consignments schedule ho gaya? Safe load & on-time delivery ke liye call karein: +91 98110 00000."
+    },
+    {
+      "id": "tata_ace_quote_english",
+      "optout_token": "token_1791400480243_rjcca36",
+      "created_at": "2026-10-07T19:14:40.243Z",
+      "updated_at": "2026-10-07T19:14:40.243Z",
+      "name": "Local Transport Availability (English)",
+      "language": "english",
+      "category": "Direct Offer",
+      "template_text": "Greetings! Papa Transport Services offers dedicated Tata Ace Gold for local Delhi NCR industrial cargo delivery. Contact +91 98110 00000 for competitive trip rates."
+    }
+  ],
+  "sms_jobs": [],
+  "sms_devices": []
 }
