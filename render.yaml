@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: apex-arcade
+    env: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: OPERATOR_MASTER_PIN
+        value: "0000"
+      - key: OPERATOR_PASSPHRASE
+        value: "AVINASH"
+      - key: OPERATOR_SECRET_ROUTE
+        value: "/sys-ops-console-91x"

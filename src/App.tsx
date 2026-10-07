@@ -24,16 +24,23 @@ import {
 } from './lib/api.ts';
 import { AppHeader } from './components/layout/AppHeader.tsx';
 import { BottomNav, NavTab } from './components/layout/BottomNav.tsx';
-import { GameSelector, GameModule } from './components/layout/GameSelector.tsx';
+import { GameModule } from './components/layout/GameSelector.tsx';
+import { LobbyHero } from './components/lobby/LobbyHero.tsx';
+import { CategoryRibbon } from './components/lobby/CategoryRibbon.tsx';
+import { RichGameCards } from './components/lobby/RichGameCards.tsx';
 import { WinGoGame } from './components/wingo/WinGoGame.tsx';
 import { AviatorGame } from './components/aviator/AviatorGame.tsx';
 import { WalletView } from './components/wallet/WalletView.tsx';
 import { ActivityView } from './components/activity/ActivityView.tsx';
 import { AccountView } from './components/account/AccountView.tsx';
+import { AgencyHub } from './components/account/AgencyHub.tsx';
 import { TopUpModal } from './components/wallet/TopUpModal.tsx';
 import { TelegramVipModal } from './components/common/TelegramVipModal.tsx';
 import { VictoryModal } from './components/common/VictoryModal.tsx';
 import { InstallApkBanner } from './components/common/InstallApkBanner.tsx';
+import { DepositBonusModal } from './components/common/DepositBonusModal.tsx';
+import { LuckyWheelModal } from './components/common/LuckyWheelModal.tsx';
+import { CustomerSupportBubble } from './components/common/CustomerSupportBubble.tsx';
 import { OperatorAuthGate } from './components/operator/OperatorAuthGate.tsx';
 import { Trophy, Flame, ShieldCheck, Zap } from 'lucide-react';
 import { soundManager } from './lib/sound.ts';
@@ -84,24 +91,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  if (isOperatorOpen) {
-    return (
-      <OperatorAuthGate
-        onClose={() => {
-          setIsOperatorOpen(false);
-          if (
-            typeof window !== 'undefined' &&
-            (window.location.search.includes('ops=true') ||
-              window.location.pathname.startsWith('/sys-ops-console'))
-          ) {
-            window.history.pushState({}, '', '/');
-          }
-        }}
-        defaultUnlocked={true}
-      />
-    );
-  }
-
   const [accountId, setAccountId] = useState<string>(() => {
     return localStorage.getItem('apex_arcade_account_id') || 'acc_demo_pilot_01';
   });
@@ -121,6 +110,32 @@ export default function App() {
   // Modals
   const [isTopUpOpen, setIsTopUpOpen] = useState<boolean>(false);
   const [isTelegramOpen, setIsTelegramOpen] = useState<boolean>(false);
+  const [isLuckyWheelOpen, setIsLuckyWheelOpen] = useState<boolean>(false);
+  const [isDepositBonusOpen, setIsDepositBonusOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('apex_bonus_modal_dismissed');
+    }
+    return true;
+  });
+
+  const handleCloseDepositBonus = () => {
+    sessionStorage.setItem('apex_bonus_modal_dismissed', 'true');
+    setIsDepositBonusOpen(false);
+  };
+
+  const handleBonusWon = async (amount: number, label: string) => {
+    try {
+      await handleTopUp(amount);
+    } catch {
+      setBalance((prev) => prev + amount);
+    }
+    setVictoryData({
+      isOpen: true,
+      amount,
+      game: 'Win Go 1Min',
+      details: `Lucky Wheel Prize: ${label}`,
+    });
+  };
 
   // Victory Celebration Modal
   const [victoryData, setVictoryData] = useState<{
@@ -280,10 +295,13 @@ export default function App() {
     });
 
     socket.on('wingo:round:result', (data: any) => {
-      showToast(
-        `Win Go #${data.periodNumber} Settled: Number ${data.outcome.number} (${data.outcome.colorDisplay})`,
-        'info'
-      );
+      // Suppress Win Go settlement toasts completely when user is playing Aviator or on another tab
+      if (activeTabRef.current === 'home' && activeGameRef.current === 'wingo') {
+        showToast(
+          `Win Go #${data.periodNumber} Settled: Number ${data.outcome.number} (${data.outcome.colorDisplay})`,
+          'info'
+        );
+      }
       refreshUserData();
       fetchWinGoHistory().then(setWinGoHistory);
     });
@@ -410,23 +428,26 @@ export default function App() {
     }
   };
 
-  const handleResetDemoBalance = async () => {
-    const diff = 1000.0 - balance;
-    if (diff > 0) {
-      await handleTopUp(diff);
-    } else {
-      showToast('Account balance reset to ₹1,000.00', 'info');
-    }
-  };
-
-  const handleSwitchDemoAccount = () => {
-    const newId = `acc_demo_${Math.floor(1000 + Math.random() * 9000)}`;
-    setAccountId(newId);
-    showToast(`Switched to demo pilot session: ${newId}`, 'info');
-  };
+  if (isOperatorOpen) {
+    return (
+      <OperatorAuthGate
+        onClose={() => {
+          setIsOperatorOpen(false);
+          if (
+            typeof window !== 'undefined' &&
+            (window.location.search.includes('ops=true') ||
+              window.location.pathname.startsWith('/sys-ops-console'))
+          ) {
+            window.history.pushState({}, '', '/');
+          }
+        }}
+        defaultUnlocked={true}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#060a12] text-slate-100 flex justify-center">
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#060a12] text-slate-100 flex justify-center overscroll-none select-none">
       {/* Desktop Left Ambient Column (PokerStars / BetWright style) */}
       <div className="hidden lg:flex w-72 p-5 flex-col justify-between border-r border-slate-700/60 bg-[#080d17]/90">
         <div>
@@ -478,12 +499,12 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Centered Mobile Gaming Shell (max-w-[480px]) */}
-      <div className="w-full max-w-[480px] min-h-screen bg-[#070b14] border-x border-slate-700/60 flex flex-col relative shadow-2xl">
-        {/* Scoped Toast Alert (Positioned at bottom-20 so it never covers top header, balance, or APK banner) */}
+      {/* Main Centered Mobile Gaming Shell (strictly locked to max-w-md and 100dvh) */}
+      <div className="w-full max-w-md h-[100dvh] max-h-[100dvh] bg-[#070b14] border-x border-slate-700/60 flex flex-col relative shadow-2xl overflow-hidden overscroll-none select-none">
+        {/* Scoped Toast Alert (Positioned at top-14 directly below header, never obscuring canvas flight curve or cashout button) */}
         {toast && (
           <div
-            className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-lg text-xs font-casino-num font-black shadow-2xl border transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-[88%] text-center pointer-events-none ${
+            className={`fixed top-14 left-1/2 -translate-x-1/2 z-50 px-3.5 py-1.5 rounded-full text-xs font-casino-num font-black shadow-2xl border transition-all animate-in fade-in slide-in-from-top-2 duration-200 max-w-[90%] text-center pointer-events-none backdrop-blur-md ${
               toast.type === 'success'
                 ? 'bg-emerald-950/95 text-emerald-200 border-emerald-500/60 shadow-emerald-950/50'
                 : toast.type === 'error'
@@ -520,11 +541,24 @@ export default function App() {
         />
 
         {/* 3. Content Area */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overscroll-none touch-pan-y">
           {activeTab === 'home' && (
-            <div>
-              {/* Prominently Pinned Game Selector Segmented Tab */}
-              <GameSelector
+            <div className="space-y-3 pb-4">
+              {/* 1. Indian Lottery Hero Banner (100% First Deposit Bonus + Quick Action Cards) */}
+              <LobbyHero
+                onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
+                onOpenCheckIn={() => setActiveTab('activity')}
+                onOpenDepositBonus={() => setIsDepositBonusOpen(true)}
+              />
+
+              {/* 2. Category Taxonomy Ribbon */}
+              <CategoryRibbon
+                activeGame={activeGame}
+                onSelectGame={setActiveGame}
+              />
+
+              {/* 3. Rich 3D Game Cards (Bursting balls & climbing red aircraft) */}
+              <RichGameCards
                 activeGame={activeGame}
                 onSelectGame={setActiveGame}
                 winGoStatusText={`#${String(winGoState.periodNumber).slice(-4)} · ${winGoState.remainingSeconds}s`}
@@ -537,25 +571,28 @@ export default function App() {
                 }
               />
 
-              {activeGame === 'wingo' ? (
-                <WinGoGame
-                  state={winGoState}
-                  walletBalance={balance}
-                  accountId={accountId}
-                  myBets={winGoBets}
-                  history={winGoHistory}
-                  onRefreshData={refreshUserData}
-                />
-              ) : (
-                <AviatorGame
-                  state={aviatorState}
-                  walletBalance={balance}
-                  accountId={accountId}
-                  myBets={aviatorBets}
-                  history={aviatorHistory}
-                  onRefreshData={refreshUserData}
-                />
-              )}
+              {/* 4. Active Game Board */}
+              <div className="pt-1">
+                {activeGame === 'wingo' ? (
+                  <WinGoGame
+                    state={winGoState}
+                    walletBalance={balance}
+                    accountId={accountId}
+                    myBets={winGoBets}
+                    history={winGoHistory}
+                    onRefreshData={refreshUserData}
+                  />
+                ) : (
+                  <AviatorGame
+                    state={aviatorState}
+                    walletBalance={balance}
+                    accountId={accountId}
+                    myBets={aviatorBets}
+                    history={aviatorHistory}
+                    onRefreshData={refreshUserData}
+                  />
+                )}
+              </div>
             </div>
           )}
 
@@ -584,23 +621,33 @@ export default function App() {
             </div>
           )}
 
+          {activeTab === 'promotion' && (
+            <div className="pt-2 px-3 pb-24">
+              <AgencyHub accountId={accountId} onRefreshData={refreshUserData} />
+            </div>
+          )}
+
           {activeTab === 'account' && (
             <div className="pt-2">
               <AccountView
                 account={account}
-                onResetDemoBalance={handleResetDemoBalance}
-                onSwitchDemoAccount={handleSwitchDemoAccount}
                 onRefreshData={refreshUserData}
-                onOpenOperatorConsole={() => setIsOperatorOpen(true)}
               />
             </div>
           )}
         </main>
 
-        {/* 4. Bottom Navigation */}
-        <BottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
+        {/* 4. Bottom Navigation with Center Elevated Lucky Wheel Tab */}
+        <BottomNav
+          activeTab={activeTab}
+          onChangeTab={setActiveTab}
+          onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
+        />
 
-        {/* 5. Global Modals */}
+        {/* 5. Fixed Floating Customer Support Bubble on Bottom-Right */}
+        <CustomerSupportBubble onOpenTelegram={() => setIsTelegramOpen(true)} />
+
+        {/* 6. Global Modals */}
         <TopUpModal
           isOpen={isTopUpOpen}
           onClose={() => setIsTopUpOpen(false)}
@@ -612,6 +659,20 @@ export default function App() {
         <TelegramVipModal
           isOpen={isTelegramOpen}
           onClose={() => setIsTelegramOpen(false)}
+        />
+
+        {/* 100% Deposit Bonus Welcome Modal */}
+        <DepositBonusModal
+          isOpen={isDepositBonusOpen}
+          onClose={handleCloseDepositBonus}
+          onRecharge={() => setIsTopUpOpen(true)}
+        />
+
+        {/* Interactive Lucky Wheel of Fortune Modal */}
+        <LuckyWheelModal
+          isOpen={isLuckyWheelOpen}
+          onClose={() => setIsLuckyWheelOpen(false)}
+          onBonusWon={handleBonusWon}
         />
 
         {/* Energetic Victory Celebration Modal on Win or Cash-Out */}

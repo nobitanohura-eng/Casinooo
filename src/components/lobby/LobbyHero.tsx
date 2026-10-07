@@ -5,57 +5,68 @@ import { soundManager } from '../../lib/sound.ts';
 interface LobbyHeroProps {
   onOpenLuckyWheel: () => void;
   onOpenCheckIn: () => void;
+  onOpenDepositBonus?: () => void;
 }
 
 export const LobbyHero: React.FC<LobbyHeroProps> = ({
   onOpenLuckyWheel,
   onOpenCheckIn,
+  onOpenDepositBonus,
 }) => {
   return (
     <div className="space-y-2.5 px-3 pt-2">
-      {/* 1. Rich Visual Hero Banner (Laxmi Lotto / Daman style dark purple/magenta gradient) */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#240b36] via-[#4a154b] to-[#1f092b] border border-purple-500/40 p-4 shadow-[0_4px_25px_rgba(74,21,75,0.45)]">
+      {/* 1. High-Converting 100% First Deposit Bonus Hero Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#2a0845] via-[#4d105c] to-[#1e0538] border border-amber-400/50 p-4 shadow-[0_4px_30px_rgba(245,158,11,0.25)]">
         {/* Ambient Glows */}
-        <div className="absolute -top-12 -right-12 w-36 h-36 bg-pink-500/30 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-500/25 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/25 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-pink-500/30 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center justify-between gap-3">
           {/* Left Text & CTA */}
           <div className="flex-1 space-y-1.5">
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-[9px] font-casino-num font-black text-amber-300 uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/60 text-[9px] font-casino-num font-black text-amber-300 uppercase tracking-wider">
               <Sparkles className="w-3 h-3 text-amber-300" />
-              <span>MEGA PRIZE POOL ₹10,00,000</span>
+              <span>UNLIMITED 100% MATCH</span>
             </div>
 
-            <h2 className="text-lg sm:text-xl font-black font-casino-num uppercase tracking-tight text-white leading-tight">
-              Lucky Wheel
-              <span className="block text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400">
-                Spin & Win Cash
+            <h2 className="text-base sm:text-lg font-black font-casino-num uppercase tracking-tight text-white leading-tight">
+              100% FIRST DEPOSIT BONUS
+              <span className="block text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 font-bold">
+                Double Your Coins on First UPI Recharge
               </span>
             </h2>
 
             <p className="text-[10px] text-purple-200/90 leading-tight line-clamp-1 font-medium">
-              Free daily spins with 100% instant UPI settlement!
+              Instant 1:1 auto-match credited directly to your balance!
             </p>
 
             <button
               onClick={() => {
                 soundManager.play('click');
-                onOpenLuckyWheel();
+                if (onOpenDepositBonus) {
+                  onOpenDepositBonus();
+                } else {
+                  onOpenCheckIn();
+                }
               }}
-              className="mt-1 h-8 px-4 rounded-lg bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-500 hover:to-pink-500 text-white font-casino-num font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(236,72,153,0.5)] border-t border-white/40 active:scale-95 transition-transform"
+              className="mt-1 h-8 px-4 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-casino-num font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.5)] border-t border-white/60 active:scale-95 transition-transform"
             >
-              <span>Join Now</span>
+              <span>CLAIM NOW</span>
               <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
             </button>
           </div>
 
-          {/* Right 3D Styled Graphic Elements (Golden Wheel + 3D Rupee Coins + Gift) */}
+          {/* Right 3D Styled Graphic Elements (Golden Ticket + 3D Coins + Gift) */}
           <div className="relative w-28 h-24 flex items-center justify-center shrink-0">
-            {/* Golden Lucky Wheel */}
-            <div className="relative w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-yellow-500 via-amber-300 to-yellow-600 shadow-[0_0_20px_rgba(245,158,11,0.5)] border-2 border-amber-400 flex items-center justify-center animate-[spin_18s_linear_infinite]">
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-900 to-indigo-950 flex items-center justify-center border border-amber-300">
-                <Disc3 className="w-12 h-12 text-yellow-300 stroke-[1.8]" />
+            {/* 3D Floating Bonus Badge */}
+            <div className="relative w-18 h-18 rounded-2xl p-1 bg-gradient-to-tr from-yellow-500 via-amber-300 to-yellow-600 shadow-[0_0_25px_rgba(245,158,11,0.5)] border-2 border-amber-300 flex flex-col items-center justify-center rotate-6">
+              <div className="w-full h-full rounded-xl bg-gradient-to-br from-purple-950 to-slate-950 flex flex-col items-center justify-center border border-amber-400/40">
+                <span className="font-casino-num font-black text-base text-amber-300 leading-none">
+                  +100%
+                </span>
+                <span className="text-[7px] text-yellow-200 font-black uppercase tracking-wider mt-0.5">
+                  DOUBLE
+                </span>
               </div>
             </div>
 
@@ -70,7 +81,7 @@ export const LobbyHero: React.FC<LobbyHeroProps> = ({
             </div>
 
             {/* Glowing Gift Box Accent */}
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 p-0.5 shadow-lg border border-pink-300 flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 via-rose-600 to-purple-700 p-0.5 shadow-lg border border-yellow-300 flex items-center justify-center">
               <Gift className="w-4 h-4 text-white" />
             </div>
           </div>

@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Account } from '../../lib/types.ts';
-import { Crown, Smartphone, KeyRound, Volume2, VolumeX, ShieldCheck, User, Sparkles } from 'lucide-react';
+import { Crown, Smartphone, Volume2, VolumeX, ShieldCheck, User, Sparkles } from 'lucide-react';
 import { soundManager } from '../../lib/sound.ts';
 import { AgencyHub } from './AgencyHub.tsx';
 import { useTranslation } from '../../lib/i18n.ts';
 
 interface AccountViewProps {
   account: Account | null;
-  onResetDemoBalance: () => void;
-  onSwitchDemoAccount: () => void;
   onRefreshData?: () => void;
-  onOpenOperatorConsole?: () => void;
 }
 
 export const AccountView: React.FC<AccountViewProps> = ({
   account,
-  onResetDemoBalance,
-  onSwitchDemoAccount,
   onRefreshData,
-  onOpenOperatorConsole,
 }) => {
   const { t } = useTranslation();
   const [soundEnabled, setSoundEnabled] = useState<boolean>(soundManager.isEnabled());
@@ -171,37 +165,6 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </button>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* 4. Sandbox Utilities */}
-      <div className="bg-[#0b101c] border border-slate-700/60 rounded-lg p-3 shadow-md space-y-2">
-        <h4 className="font-casino-num font-black text-white text-xs uppercase tracking-wider">
-          Testing Session Controls
-        </h4>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={onResetDemoBalance}
-            className="py-2 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-300 font-casino-num font-bold text-xs transition-colors"
-          >
-            Reset ₹1,000 Balance
-          </button>
-          <button
-            onClick={onSwitchDemoAccount}
-            className="py-2 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-casino-num font-bold text-xs transition-colors"
-          >
-            New Pilot Session
-          </button>
-        </div>
-
-        {onOpenOperatorConsole && (
-          <button
-            onClick={onOpenOperatorConsole}
-            className="w-full mt-2 py-2 px-3 rounded-md bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-amber-300 font-casino-num font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-            <span>Launch Operator War Room (Admin Console)</span>
-          </button>
         )}
       </div>
     </div>

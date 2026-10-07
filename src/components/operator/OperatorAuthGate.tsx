@@ -20,7 +20,9 @@ export const OperatorAuthGate: React.FC<OperatorAuthGateProps> = ({ onClose, def
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   const [lockoutSeconds, setLockoutSeconds] = useState<number | null>(null);
 
-  // Validate existing token on mount
+  const [autoAttempted, setAutoAttempted] = useState<boolean>(false);
+
+  // Validate existing token or auto-connect on mount
   useEffect(() => {
     if (token) {
       fetch('/api/ops/verify', {
@@ -31,14 +33,19 @@ export const OperatorAuthGate: React.FC<OperatorAuthGateProps> = ({ onClose, def
           if (!data.success) {
             sessionStorage.removeItem('apex_operator_token');
             setToken(null);
+            handleQuickInstantEnter();
           }
         })
         .catch(() => {
           sessionStorage.removeItem('apex_operator_token');
           setToken(null);
+          handleQuickInstantEnter();
         });
+    } else if (!autoAttempted) {
+      setAutoAttempted(true);
+      handleQuickInstantEnter();
     }
-  }, [token]);
+  }, [token, autoAttempted]);
 
   // Handle countdown timer if locked out
   useEffect(() => {
