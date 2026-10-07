@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Copy, Check, TrendingUp, Sparkles, ShieldCheck } from 'lucide-react';
+import { Users, Copy, Check, TrendingUp, Sparkles, ShieldCheck, Share2, Award, ChevronRight } from 'lucide-react';
 import { formatINR } from '../../lib/formatters.ts';
 import { soundManager } from '../../lib/sound.ts';
 import { useTranslation } from '../../lib/i18n.ts';
@@ -68,7 +68,7 @@ export const AgencyHub: React.FC<AgencyHubProps> = ({ accountId, onRefreshData }
 
       if (data.success) {
         soundManager.play('bet');
-        setClaimMessage(`+${formatINR(data.amount)} Commission credited to Master Vault!`);
+        setClaimMessage(`+${formatINR(data.amount)} Commission credited to your wallet!`);
         fetchAgencySummary();
         if (onRefreshData) onRefreshData();
       } else {
@@ -82,122 +82,175 @@ export const AgencyHub: React.FC<AgencyHubProps> = ({ accountId, onRefreshData }
 
   if (!summary) {
     return (
-      <div className="bg-[#0b101c] border border-slate-700/60 rounded-lg p-3 text-center text-slate-500 text-xs font-casino-num">
-        Loading Agency Hub data...
+      <div className="bg-white rounded-2xl p-6 text-center text-slate-400 text-xs shadow-sm border border-slate-100">
+        Loading Agency Commission Hub...
       </div>
     );
   }
 
   return (
-    <div className="bg-[#0b101c] border border-amber-500/30 rounded-lg p-3 shadow-md space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-gradient-to-br from-amber-400 to-amber-700 text-slate-950 flex items-center justify-center font-bold shadow-sm">
-            <Users className="w-3.5 h-3.5 stroke-[2.5]" />
+    <div className="space-y-3.5 pb-24 text-slate-800 select-none">
+      {/* 1. Commission Hero Banner (Gradient Coral/Red) */}
+      <div className="rounded-2xl bg-gradient-to-r from-[#f95959] via-[#fa6c6c] to-[#ff8579] p-4 text-white shadow-md relative overflow-hidden">
+        {/* Subtle Ambient Circle */}
+        <div className="absolute -top-10 -right-10 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
+
+        <div className="relative z-10 flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white">
+              <Award className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black tracking-wide font-casino-num">
+                Agency Promotion
+              </h2>
+              <span className="text-[10px] text-white/90">
+                3-Tier Downline Rebate System
+              </span>
+            </div>
           </div>
+          <span className="text-[10px] bg-white/20 border border-white/30 text-white px-2 py-0.5 rounded-full font-bold">
+            Up to 1% Rebate
+          </span>
+        </div>
+
+        {/* Claimable Balance Box */}
+        <div className="mt-3 p-3.5 rounded-xl bg-white/15 backdrop-blur-xs border border-white/25 flex items-center justify-between">
           <div>
-            <h4 className="font-casino-num font-black text-white text-xs uppercase tracking-wider">
-              {t('agencyReferral')}
-            </h4>
-            <p className="text-[9px] text-amber-400 font-casino-num font-bold">
-              3-Level Downline Commission Schema
-            </p>
+            <span className="text-[10px] text-white/80 uppercase font-bold block">
+              Claimable Commission
+            </span>
+            <span className="text-2xl font-black text-white font-casino-num block mt-0.5">
+              {formatINR(summary.claimableCommission)}
+            </span>
+            <span className="text-[10px] text-white/90 block mt-0.5">
+              Total Earned: {formatINR(summary.totalCommission)}
+            </span>
           </div>
-        </div>
 
-        <span className="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-casino-num font-bold">
-          L1: 0.6% | L2: 0.3% | L3: 0.1%
-        </span>
-      </div>
-
-      {/* Claimable Commission Card */}
-      <div className="bg-[#070b14] border border-amber-500/30 rounded-md p-3 flex items-center justify-between">
-        <div>
-          <span className="text-[10px] text-slate-400 font-casino-num uppercase font-bold block">
-            Claimable Commission
-          </span>
-          <span className="font-casino-num font-black text-amber-300 text-xl block mt-0.5">
-            {formatINR(summary.claimableCommission)}
-          </span>
-          <span className="text-[10px] text-slate-400 font-casino-num block mt-0.5">
-            Total Earned: {formatINR(summary.totalCommission)}
-          </span>
-        </div>
-
-        <button
-          onClick={handleClaimCommission}
-          disabled={summary.claimableCommission <= 0 || isClaiming}
-          className={`px-3 py-2 rounded-md font-casino-num font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-            summary.claimableCommission > 0
-              ? 'bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 active:scale-95'
-              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Claim</span>
-        </button>
-      </div>
-
-      {claimMessage && (
-        <div className="p-2 rounded-md bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-casino-num font-bold text-center">
-          {claimMessage}
-        </div>
-      )}
-
-      {/* Referral Link & Code */}
-      <div className="bg-[#070b14] border border-slate-800 rounded-md p-2.5">
-        <span className="text-[10px] text-slate-400 font-casino-num uppercase font-bold block mb-1">
-          Your Direct Inviter Link
-        </span>
-        <div className="flex items-center gap-1.5">
-          <input
-            type="text"
-            readOnly
-            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?ref=${summary.referralCode}`}
-            className="flex-1 bg-[#0b101c] border border-slate-800 rounded-md px-2.5 py-1.5 text-xs text-slate-300 font-casino-num select-all focus:outline-none"
-          />
           <button
-            onClick={handleCopyLink}
-            className="px-3 py-1.5 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-casino-num font-black text-xs uppercase tracking-wider flex items-center gap-1 transition-colors"
+            onClick={handleClaimCommission}
+            disabled={summary.claimableCommission <= 0 || isClaiming}
+            className={`px-4 py-2 rounded-xl font-bold text-xs shadow-md transition-all ${
+              summary.claimableCommission > 0
+                ? 'bg-amber-300 hover:bg-amber-400 text-slate-900 active:scale-95'
+                : 'bg-white/20 text-white/60 cursor-not-allowed'
+            }`}
           >
-            {isCopied ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{isCopied ? 'Copied' : 'Copy'}</span>
+            {isClaiming ? 'Claiming...' : 'Claim Now'}
           </button>
         </div>
+
+        {claimMessage && (
+          <div className="mt-2.5 p-2 rounded-lg bg-emerald-500/90 text-white text-xs font-bold text-center">
+            {claimMessage}
+          </div>
+        )}
       </div>
 
-      {/* 3-Tier Downline Breakdown */}
-      <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
-        <div className="bg-[#070b14] border border-slate-800/80 p-2 rounded-md">
-          <span className="text-[9px] text-amber-400 font-casino-num font-bold uppercase block">
-            Level 1 (0.6%)
+      {/* 2. Invitation Link & Code Card (Clean White) */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <Share2 className="w-4 h-4 text-[#f95959]" />
+            Your Invitation Code
           </span>
-          <span className="font-casino-num font-black text-white text-sm mt-0.5 block">
-            {summary.level1Count}
+          <span className="text-sm font-black font-mono text-[#f95959] bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-lg">
+            {summary.referralCode}
           </span>
-          <span className="text-[9px] text-slate-500 font-casino-num">Direct Users</span>
         </div>
 
-        <div className="bg-[#070b14] border border-slate-800/80 p-2 rounded-md">
-          <span className="text-[9px] text-purple-400 font-casino-num font-bold uppercase block">
-            Level 2 (0.3%)
+        <div>
+          <span className="text-[11px] text-[#768096] block mb-1">
+            Direct Invitation Link
           </span>
-          <span className="font-casino-num font-black text-white text-sm mt-0.5 block">
-            {summary.level2Count}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-700 truncate select-all">
+              {`${typeof window !== 'undefined' ? window.location.origin : ''}/?ref=${summary.referralCode}`}
+            </div>
+            <button
+              onClick={handleCopyLink}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#f95959] to-[#ff7979] text-white text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition-all shrink-0"
+            >
+              {isCopied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. 3-Tier Downline Breakdown (Clean White Cards) */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            Downline Tier Structure
           </span>
-          <span className="text-[9px] text-slate-500 font-casino-num">Sub-team</span>
+          <span className="text-[11px] text-[#768096] font-medium">
+            Total Team: <strong className="text-slate-800 font-casino-num">{summary.totalTeamCount}</strong>
+          </span>
         </div>
 
-        <div className="bg-[#070b14] border border-slate-800/80 p-2 rounded-md">
-          <span className="text-[9px] text-sky-400 font-casino-num font-bold uppercase block">
-            Level 3 (0.1%)
-          </span>
-          <span className="font-casino-num font-black text-white text-sm mt-0.5 block">
-            {summary.level3Count}
-          </span>
-          <span className="text-[9px] text-slate-500 font-casino-num">Network</span>
+        <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+          {/* Level 1 */}
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] font-black text-rose-500 uppercase block font-casino-num">
+              Level 1 (0.6%)
+            </span>
+            <span className="text-base font-black text-slate-900 font-casino-num block mt-1">
+              {summary.level1Count}
+            </span>
+            <span className="text-[9px] text-[#768096] block mt-0.5">Direct Invites</span>
+          </div>
+
+          {/* Level 2 */}
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] font-black text-orange-500 uppercase block font-casino-num">
+              Level 2 (0.3%)
+            </span>
+            <span className="text-base font-black text-slate-900 font-casino-num block mt-1">
+              {summary.level2Count}
+            </span>
+            <span className="text-[9px] text-[#768096] block mt-0.5">Tier 2 Team</span>
+          </div>
+
+          {/* Level 3 */}
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] font-black text-purple-500 uppercase block font-casino-num">
+              Level 3 (0.1%)
+            </span>
+            <span className="text-base font-black text-slate-900 font-casino-num block mt-1">
+              {summary.level3Count}
+            </span>
+            <span className="text-[9px] text-[#768096] block mt-0.5">Tier 3 Team</span>
+          </div>
         </div>
+      </div>
+
+      {/* 4. Commission Rules & Perks (Clean White Card) */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-xs text-slate-600 space-y-2">
+        <h4 className="font-bold text-slate-800 text-xs mb-1.5 flex items-center gap-1.5">
+          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+          Agency Rules & Commission Settlement
+        </h4>
+        <p className="text-[11px] leading-relaxed text-[#768096]">
+          1. <strong>Sub-Second Auto Settlement:</strong> Whenever your downline members place bets in Win Go 1Min or Aviator, your commission is calculated and credited instantly.
+        </p>
+        <p className="text-[11px] leading-relaxed text-[#768096]">
+          2. <strong>No Upper Limit:</strong> Invite unlimited friends. Lifelong commissions on all betting volume.
+        </p>
+        <p className="text-[11px] leading-relaxed text-[#768096]">
+          3. <strong>Instant Withdrawal:</strong> Claimed commission goes directly to your main balance and can be withdrawn to UPI anytime!
+        </p>
       </div>
     </div>
   );

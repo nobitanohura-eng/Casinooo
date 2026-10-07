@@ -23,6 +23,7 @@ import {
   topupCredits,
 } from './lib/api.ts';
 import { AppHeader } from './components/layout/AppHeader.tsx';
+import { TabHeader } from './components/layout/TabHeader.tsx';
 import { BottomNav, NavTab } from './components/layout/BottomNav.tsx';
 import { GameModule } from './components/layout/GameSelector.tsx';
 import { Lottery7Lobby } from './components/lottery7/Lottery7Lobby.tsx';
@@ -715,7 +716,7 @@ export default function App() {
       </div>
 
       {/* Main Centered Mobile Gaming Shell (strictly locked to max-w-md and 100dvh) */}
-      <div className={`w-full max-w-md h-[100dvh] max-h-[100dvh] ${isLobbyView ? 'bg-[#f7f8ff] text-[#1e2637] border-x border-slate-200' : 'bg-[#070b14] border-x border-slate-700/60 text-slate-100'} flex flex-col relative shadow-2xl overflow-hidden overscroll-none select-none`}>
+      <div className={`w-full max-w-md h-[100dvh] max-h-[100dvh] ${activeTab === 'home' && activeGame === 'wingo' ? 'bg-[#070b14] border-x border-slate-700/60 text-slate-100' : 'bg-[#f7f8ff] text-[#1e2637] border-x border-slate-200'} flex flex-col relative shadow-2xl overflow-hidden overscroll-none select-none`}>
         {/* Scoped Toast Alert */}
         {toast && (
           <div
@@ -731,31 +732,28 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. Integrated Header for Non-Lobby Views */}
-        {!isLobbyView && activeGame !== 'wingo' && (
-          <>
-            <AppHeader
-              balance={balance}
-              isConnected={isConnected}
-              onOpenTopUp={() => setIsTopUpOpen(true)}
-              onOpenAccount={() => setActiveTab('account')}
-              onOpenTelegramVIP={() => setIsTelegramOpen(true)}
-              onSecretOperatorTrigger={() => setIsOperatorOpen(true)}
-              accountId={accountId}
-            />
-
-            <InstallApkBanner
-              onBonusClaimed={(bonus) => {
-                handleTopUp(bonus);
-                setVictoryData({
-                  isOpen: true,
-                  amount: bonus,
-                  game: 'Win Go 1Min',
-                  details: 'Official Android APK Installation Bonus',
-                });
-              }}
-            />
-          </>
+        {/* 1. Official Sticky Tab Header for Secondary Views */}
+        {activeTab !== 'home' && (
+          <TabHeader
+            title={
+              activeTab === 'promotion'
+                ? 'Agency Commission Hub'
+                : activeTab === 'activity'
+                ? 'Activity & Attendance'
+                : activeTab === 'wallet'
+                ? 'Wallet & Banking'
+                : activeTab === 'account'
+                ? 'VIP Pilot Profile'
+                : 'Apex Arcade'
+            }
+            onBackToHome={() => {
+              setActiveTab('home');
+              setActiveGame('lobby');
+            }}
+            balance={balance}
+            onOpenDeposit={() => setIsTopUpOpen(true)}
+            onRefreshBalance={refreshUserData}
+          />
         )}
 
         {/* 2. Content Area */}
@@ -810,18 +808,20 @@ export default function App() {
           )}
 
           {activeTab === 'activity' && (
-            <div className="pt-2">
+            <div>
               <ActivityView
                 wingoBets={winGoBets}
                 aviatorBets={aviatorBets}
                 accountId={accountId}
                 onRefreshData={refreshUserData}
+                onOpenDepositBonus={() => setIsDepositBonusOpen(true)}
+                onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
               />
             </div>
           )}
 
           {activeTab === 'wallet' && (
-            <div className="pt-2">
+            <div>
               <WalletView
                 balance={balance}
                 ledger={ledger}
@@ -841,34 +841,42 @@ export default function App() {
           )}
 
           {activeTab === 'account' && (
-            <div className="pt-2">
+            <div>
               <AccountView
                 account={account}
+                balance={balance}
                 onRefreshData={refreshUserData}
+                onOpenDeposit={() => setIsTopUpOpen(true)}
+                onOpenWithdraw={() => setIsWithdrawOpen(true)}
+                onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
+                onOpenTelegram={() => setIsTelegramOpen(true)}
+                onOpenSupport={() => setIsTelegramOpen(true)}
+                onSwitchAccount={handleSwitchAccount}
+                onNavigateTab={(tab) => {
+                  setActiveTab(tab);
+                  if (tab === 'home') setActiveGame('lobby');
+                }}
               />
             </div>
           )}
         </main>
 
-        {/* 3. Official Lottery 7 Bottom Navigation Bar */}
-        <Lottery7BottomNav
-          activeTab={activeTab}
-          onChangeTab={(tab) => {
-            setActiveTab(tab);
-            if (tab === 'home') {
+        {/* 3. Official Lottery 7 Bottom Navigation Bar (Hidden during Win Go gameplay to prevent overlap) */}
+        {activeGame !== 'wingo' && (
+          <Lottery7BottomNav
+            activeTab={activeTab}
+            onChangeTab={(tab) => {
+              setActiveTab(tab);
+              if (tab === 'home') {
+                setActiveGame('lobby');
+              }
+            }}
+            onSelectLobby={() => {
+              setActiveTab('home');
               setActiveGame('lobby');
-            }
-          }}
-          onSelectLobby={() => {
-            setActiveTab('home');
-            setActiveGame('lobby');
-          }}
-          onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
-        />
-
-        {/* 4. Customer Support Bubble on Secondary Views */}
-        {!isLobbyView && (
-          <CustomerSupportBubble onOpenTelegram={() => setIsTelegramOpen(true)} />
+            }}
+            onOpenLuckyWheel={() => setIsLuckyWheelOpen(true)}
+          />
         )}
 
         {/* 5. Global Modals */}

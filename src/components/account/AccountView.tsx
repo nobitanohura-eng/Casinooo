@@ -1,21 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { Account } from '../../lib/types.ts';
-import { Crown, Smartphone, Volume2, VolumeX, ShieldCheck, User, Sparkles } from 'lucide-react';
+import {
+  Crown,
+  Smartphone,
+  Volume2,
+  VolumeX,
+  ShieldCheck,
+  User,
+  Sparkles,
+  ChevronRight,
+  History,
+  Wallet,
+  Gift,
+  Send,
+  Headphones,
+  RotateCcw,
+  CheckCircle,
+  Copy,
+  PlusCircle,
+  ArrowUpRight,
+} from 'lucide-react';
 import { soundManager } from '../../lib/sound.ts';
-import { AgencyHub } from './AgencyHub.tsx';
-import { useTranslation } from '../../lib/i18n.ts';
+import { formatINR } from '../../lib/formatters.ts';
 
 interface AccountViewProps {
   account: Account | null;
+  balance?: number;
   onRefreshData?: () => void;
+  onOpenDeposit?: () => void;
+  onOpenWithdraw?: () => void;
+  onOpenLuckyWheel?: () => void;
+  onOpenTelegram?: () => void;
+  onOpenSupport?: () => void;
+  onSwitchAccount?: (id: string) => void;
+  onNavigateTab?: (tab: any) => void;
 }
 
 export const AccountView: React.FC<AccountViewProps> = ({
   account,
+  balance = 1000,
   onRefreshData,
+  onOpenDeposit,
+  onOpenWithdraw,
+  onOpenLuckyWheel,
+  onOpenTelegram,
+  onOpenSupport,
+  onSwitchAccount,
+  onNavigateTab,
 }) => {
-  const { t } = useTranslation();
   const [soundEnabled, setSoundEnabled] = useState<boolean>(soundManager.isEnabled());
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   useEffect(() => {
     return soundManager.subscribe((enabled) => {
@@ -28,144 +62,283 @@ export const AccountView: React.FC<AccountViewProps> = ({
     setSoundEnabled(next);
   };
 
+  const handleCopyId = () => {
+    if (!account) return;
+    navigator.clipboard.writeText(account.id).catch(() => {});
+    setIsCopied(true);
+    soundManager.play('click');
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
   if (!account) return null;
 
   return (
-    <div className="space-y-3 px-3 pb-24">
-      {/* 1. Gamified VIP Profile Avatar Card with Metallic Crown & VIP 1 Pill */}
-      <div className="bg-[#0b101c] border border-slate-700/60 rounded-lg p-4 shadow-md">
-        <div className="flex items-center gap-3.5 mb-3">
-          {/* Luxury Profile Avatar Chip without random numbers */}
-          <div className="relative w-14 h-14 rounded-lg bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 text-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/25 border-t border-white/60">
-            <User className="w-8 h-8 text-slate-950 stroke-[2.5]" />
-            {/* Metallic Golden Crown Badge */}
-            <div className="absolute -top-2.5 -right-2 bg-slate-950 border border-amber-400/80 rounded-full p-1 shadow-md">
-              <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+    <div className="space-y-3 px-3 pt-3 pb-24 text-slate-800 select-none">
+      {/* 1. VIP Profile Header Banner (Gradient Coral/Red) */}
+      <div className="rounded-2xl bg-gradient-to-r from-[#f95959] via-[#fa6c6c] to-[#ff8579] p-4 text-white shadow-md relative overflow-hidden">
+        {/* Subtle Ambient Circle */}
+        <div className="absolute -top-10 -right-10 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
+
+        <div className="flex items-center gap-3.5 relative z-10">
+          {/* Avatar with Metallic Golden Crown */}
+          <div className="relative w-14 h-14 rounded-2xl bg-white/20 border-2 border-white flex items-center justify-center shadow-md">
+            <User className="w-8 h-8 text-white stroke-[2.2]" />
+            <div className="absolute -top-2 -right-2 bg-amber-400 border border-white rounded-full p-1 shadow-sm">
+              <Crown className="w-3.5 h-3.5 text-slate-900 fill-slate-900" />
             </div>
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-casino-num font-black text-white text-base leading-tight truncate">
+              <h2 className="font-casino-num font-black text-white text-base leading-tight truncate">
                 VIP Pilot
-              </h3>
-              <span className="bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-casino-num font-black text-[9px] px-2 py-0.5 rounded shadow-sm uppercase tracking-wide">
+              </h2>
+              <span className="bg-amber-300 text-slate-900 font-casino-num font-black text-[9px] px-2 py-0.5 rounded-full shadow-xs uppercase tracking-wide">
                 VIP 1
               </span>
             </div>
 
-            <span className="text-xs text-amber-400 font-casino-num font-bold block mt-0.5">
-              ID: {account.id}
-            </span>
+            {/* User ID with Copy */}
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-xs text-white/90 font-mono font-medium">
+                ID: {account.id}
+              </span>
+              <button
+                onClick={handleCopyId}
+                className="text-white/80 hover:text-white transition-colors"
+                title="Copy ID"
+              >
+                {isCopied ? (
+                  <CheckCircle className="w-3 h-3 text-emerald-300" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </button>
+            </div>
 
-            {/* Clean Player Trust Badges */}
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-casino-num font-bold text-[10px]">
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+            {/* Badges */}
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[9px] backdrop-blur-xs">
+                <ShieldCheck className="w-2.5 h-2.5 text-emerald-300" />
                 KYC Verified
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-casino-num font-bold text-[10px]">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                VIP Member
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[9px] backdrop-blur-xs">
+                <Smartphone className="w-2.5 h-2.5 text-amber-200" />
+                {account.mobile}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Profile Info Details */}
-        <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-800 text-xs">
-          <div className="bg-[#070b14] p-2 rounded-md border border-slate-800/80">
-            <span className="text-[9px] text-slate-400 uppercase font-bold block font-casino-num flex items-center gap-1">
-              <Smartphone className="w-3 h-3 text-slate-400" />
-              Verified Mobile
-            </span>
-            <span className="font-casino-num font-bold text-slate-200 mt-0.5 block">
-              {account.mobile}
-            </span>
-          </div>
-
-          <div className="bg-[#070b14] p-2 rounded-md border border-slate-800/80">
-            <span className="text-[9px] text-slate-400 uppercase font-bold block font-casino-num flex items-center gap-1">
-              <Crown className="w-3 h-3 text-amber-400" />
-              Tier Status
-            </span>
-            <span className="font-casino-num font-black text-amber-400 mt-0.5 block">
-              VIP LEVEL 1
-            </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Multi-Tier Agency / Affiliate Hub */}
-      <AgencyHub accountId={account.id} onRefreshData={onRefreshData} />
+      {/* 2. Wallet Overview Card (Matching Home Balance Card Style) */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+          <span className="text-[11px] text-[#768096] font-medium block">
+            Total Balance
+          </span>
+          <span className="text-2xl font-black text-slate-900 font-casino-num block mt-0.5">
+            {formatINR(balance)}
+          </span>
+        </div>
 
-      {/* 3. Audio & Sound Settings */}
-      <div className="bg-[#0b101c] border border-slate-700/60 rounded-lg p-3 shadow-md space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-7 h-7 rounded-md flex items-center justify-center ${
-                soundEnabled
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                  : 'bg-slate-800 text-slate-500'
-              }`}
+        <div className="flex items-center gap-2">
+          {onOpenWithdraw && (
+            <button
+              onClick={onOpenWithdraw}
+              className="border border-[#ffbe3f] bg-white text-[#fa8c16] text-xs font-bold px-3.5 py-1.5 rounded-lg hover:bg-amber-50 active:scale-95 transition-all shadow-xs"
             >
+              Withdraw
+            </button>
+          )}
+          {onOpenDeposit && (
+            <button
+              onClick={onOpenDeposit}
+              className="bg-gradient-to-r from-[#f95959] to-[#ff7979] text-white text-xs font-bold px-4 py-1.5 rounded-lg shadow-sm hover:brightness-105 active:scale-95 transition-all"
+            >
+              Deposit
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Account Menu / Quick Links List */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+        {/* Game History */}
+        <div
+          onClick={() => {
+            soundManager.play('click');
+            if (onNavigateTab) onNavigateTab('activity');
+          }}
+          className="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+              <History className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Game Bet History</span>
+              <span className="text-[10px] text-slate-400">Win Go 1Min & Aviator records</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </div>
+
+        {/* Financial Ledger / Wallet */}
+        <div
+          onClick={() => {
+            soundManager.play('click');
+            if (onNavigateTab) onNavigateTab('wallet');
+          }}
+          className="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+              <Wallet className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Transaction Ledger</span>
+              <span className="text-[10px] text-slate-400">Deposit, withdrawal & win history</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </div>
+
+        {/* Lucky Wheel */}
+        <div
+          onClick={() => {
+            soundManager.play('click');
+            if (onOpenLuckyWheel) onOpenLuckyWheel();
+          }}
+          className="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center">
+              <Gift className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Lucky Wheel of Fortune</span>
+              <span className="text-[10px] text-slate-400">Spin to win iPhone 17 & cash prizes</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </div>
+
+        {/* Telegram VIP Channel */}
+        <div
+          onClick={() => {
+            soundManager.play('click');
+            if (onOpenTelegram) onOpenTelegram();
+          }}
+          className="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+              <Send className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Official Telegram VIP</span>
+              <span className="text-[10px] text-slate-400">Daily gift codes & predictive analysis</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </div>
+
+        {/* Customer Support */}
+        <div
+          onClick={() => {
+            soundManager.play('click');
+            if (onOpenSupport) onOpenSupport();
+          }}
+          className="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+              <Headphones className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Customer Service</span>
+              <span className="text-[10px] text-slate-400">24/7 instant resolution</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </div>
+      </div>
+
+      {/* 4. Audio & Sound Settings Card */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${soundEnabled ? 'bg-amber-50 text-amber-500' : 'bg-slate-100 text-slate-400'}`}>
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </div>
             <div>
-              <h4 className="font-casino-num font-black text-white text-xs uppercase tracking-wider">
-                Sound Effects & Audio
+              <h4 className="text-xs font-bold text-slate-800">
+                Game Sound Effects
               </h4>
               <p className="text-[10px] text-slate-400">
-                {soundEnabled ? 'Tactile clicks, win chimes & crash alerts on' : 'Arcade audio muted'}
+                {soundEnabled ? 'Win chimes, flight cues & tactile pops active' : 'Audio muted'}
               </p>
             </div>
           </div>
 
-          {/* Toggle Switch */}
           <button
             onClick={handleToggleSound}
             aria-label="Toggle sound settings"
             className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
-              soundEnabled ? 'bg-amber-500' : 'bg-slate-700'
+              soundEnabled ? 'bg-[#f95959]' : 'bg-slate-200'
             }`}
           >
             <div
-              className={`w-5 h-5 rounded-full bg-slate-950 transition-transform shadow-md ${
+              className={`w-5 h-5 rounded-full bg-white transition-transform shadow-md ${
                 soundEnabled ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </button>
         </div>
 
-        {/* Audio Previews */}
         {soundEnabled && (
-          <div className="pt-2 border-t border-slate-800">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5 font-casino-num">
-              Preview Sound Effects
+          <div className="pt-2.5 border-t border-slate-100">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2 font-casino-num">
+              Preview Audio Cues
             </span>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => soundManager.play('click')}
-                className="py-1 px-2 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 font-casino-num text-[10px] font-bold border border-slate-700/60 transition-colors"
+                className="py-1.5 px-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200 transition-colors"
               >
                 Pop Click
               </button>
               <button
                 onClick={() => soundManager.play('win')}
-                className="py-1 px-2 rounded-md bg-emerald-950 hover:bg-emerald-900 text-emerald-300 font-casino-num text-[10px] font-bold border border-emerald-800/60 transition-colors"
+                className="py-1.5 px-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 transition-colors"
               >
                 Win Chime
               </button>
               <button
                 onClick={() => soundManager.play('crash')}
-                className="py-1 px-2 rounded-md bg-rose-950 hover:bg-rose-900 text-rose-300 font-casino-num text-[10px] font-bold border border-rose-800/60 transition-colors"
+                className="py-1.5 px-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-bold border border-rose-200 transition-colors"
               >
                 Crash Thud
               </button>
             </div>
           </div>
         )}
+      </div>
+
+      {/* 5. Switch Account / Reset Pilot Session */}
+      <div className="pt-2 text-center">
+        <button
+          onClick={() => {
+            soundManager.play('click');
+            const newId = `acc_pilot_${Math.floor(10 + Math.random() * 90)}`;
+            if (onSwitchAccount) onSwitchAccount(newId);
+          }}
+          className="text-xs text-[#768096] hover:text-[#f95959] font-bold flex items-center justify-center gap-1.5 mx-auto py-2 px-4 rounded-xl hover:bg-slate-100 transition-colors"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Switch Pilot Session ({account.id})</span>
+        </button>
       </div>
     </div>
   );

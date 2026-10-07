@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { WinGoBet, AviatorBet } from '../../lib/types.ts';
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Trophy, Flame, Sparkles, Filter, CheckCircle2, XCircle } from 'lucide-react';
 import { formatINR } from '../../lib/formatters.ts';
 import { AttendanceCard } from './AttendanceCard.tsx';
 import { useTranslation } from '../../lib/i18n.ts';
@@ -10,6 +10,8 @@ interface ActivityViewProps {
   aviatorBets: AviatorBet[];
   accountId?: string;
   onRefreshData?: () => void;
+  onOpenDepositBonus?: () => void;
+  onOpenLuckyWheel?: () => void;
 }
 
 export const ActivityView: React.FC<ActivityViewProps> = ({
@@ -17,6 +19,8 @@ export const ActivityView: React.FC<ActivityViewProps> = ({
   aviatorBets,
   accountId = 'acc_demo_pilot_01',
   onRefreshData,
+  onOpenDepositBonus,
+  onOpenLuckyWheel,
 }) => {
   const { t } = useTranslation();
   const [filterGame, setFilterGame] = useState<'ALL' | 'WINGO' | 'AVIATOR'>('ALL');
@@ -74,156 +78,162 @@ export const ActivityView: React.FC<ActivityViewProps> = ({
   const netProfit = totalPayout - totalWagered;
 
   return (
-    <div className="space-y-3 px-3 pb-24">
+    <div className="space-y-3 px-3 pt-3 pb-24 text-slate-800 select-none">
       {/* 1. 7-Day Attendance Streak Card */}
       <AttendanceCard accountId={accountId} onRefreshData={onRefreshData} />
 
-      {/* 2. Performance Metric Tiles */}
-      <div className="bg-[#0b101c] border border-slate-700/60 rounded-lg p-3 shadow-md grid grid-cols-3 gap-1.5 text-center">
-        <div className="bg-[#070b14] p-2 rounded-md border border-slate-800">
-          <span className="text-[9px] text-slate-400 uppercase font-bold block font-casino-num">
-            Total Bets
+      {/* 2. Performance Metric Tiles (Clean White Card) */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            Gaming Activity Stats
           </span>
-          <span className="font-casino-num font-black text-white text-base mt-0.5 block">
-            {filteredItems.length}
+          <span className="text-[10px] text-[#768096] font-medium">
+            Live Settlement
           </span>
-        </div>
-        <div className="bg-[#070b14] p-2 rounded-md border border-slate-800">
-          <span className="text-[9px] text-slate-400 uppercase font-bold block font-casino-num">
-            Total Wager
-          </span>
-          <span className="font-casino-num font-black text-slate-200 text-xs mt-0.5 block">
-            {formatINR(totalWagered)}
-          </span>
-        </div>
-        <div className="bg-[#070b14] p-2 rounded-md border border-slate-800">
-          <span className="text-[9px] text-slate-400 uppercase font-bold block font-casino-num">
-            Net Return
-          </span>
-          <span
-            className={`font-casino-num font-black text-xs mt-0.5 block ${
-              netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
-            }`}
-          >
-            {netProfit >= 0 ? `+${formatINR(netProfit)}` : `-${formatINR(Math.abs(netProfit))}`}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. Filter Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-[#0b101c] p-1 rounded-md border border-slate-700/60">
-          <button
-            onClick={() => setFilterGame('ALL')}
-            className={`px-2.5 py-1 rounded text-xs font-casino-num font-bold transition-all ${
-              filterGame === 'ALL'
-                ? 'bg-amber-500 text-slate-950 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            All Games
-          </button>
-          <button
-            onClick={() => setFilterGame('WINGO')}
-            className={`px-2.5 py-1 rounded text-xs font-casino-num font-bold transition-all ${
-              filterGame === 'WINGO'
-                ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Win Go
-          </button>
-          <button
-            onClick={() => setFilterGame('AVIATOR')}
-            className={`px-2.5 py-1 rounded text-xs font-casino-num font-bold transition-all ${
-              filterGame === 'AVIATOR'
-                ? 'bg-rose-500 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Aviator
-          </button>
         </div>
 
-        <span className="text-[10px] text-amber-400 font-casino-num font-bold">
-          {filteredItems.length} Records
-        </span>
-      </div>
-
-      {/* 4. Activity List */}
-      <div className="space-y-1.5">
-        {filteredItems.length === 0 ? (
-          <div className="bg-[#0b101c] border border-slate-800 rounded-lg p-6 text-center text-slate-500 text-xs font-casino-num">
-            No wagering records found.
+        <div className="grid grid-cols-3 gap-2 text-center pt-1">
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] text-[#768096] font-bold block uppercase">
+              Total Bets
+            </span>
+            <span className="text-base font-black text-slate-900 font-casino-num block mt-0.5">
+              {filteredItems.length}
+            </span>
           </div>
-        ) : (
-          filteredItems.map((item) => {
-            const isWon = item.status === 'WON';
-            const isPending = item.status === 'PENDING' || item.status === 'IN_FLIGHT';
 
-            return (
-              <div
-                key={item.id}
-                className="bg-[#0b101c] border border-slate-700/60 rounded-md p-2.5 flex items-center justify-between text-xs"
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] text-[#768096] font-bold block uppercase">
+              Total Wager
+            </span>
+            <span className="text-xs font-black text-slate-900 font-casino-num block mt-1">
+              {formatINR(totalWagered)}
+            </span>
+          </div>
+
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] text-[#768096] font-bold block uppercase">
+              Net Profit
+            </span>
+            <span className={`text-xs font-black font-casino-num block mt-1 ${netProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+              {netProfit >= 0 ? `+${formatINR(netProfit)}` : formatINR(netProfit)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Promotional Activity Banners */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div
+          onClick={onOpenDepositBonus}
+          className="bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-200 rounded-2xl p-3 shadow-xs cursor-pointer hover:shadow-sm active:scale-98 transition-all"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-6 h-6 rounded-lg bg-rose-500 text-white flex items-center justify-center font-bold text-xs">
+              🎁
+            </div>
+            <span className="text-xs font-bold text-slate-800">100% Bonus</span>
+          </div>
+          <p className="text-[10px] text-[#768096]">First deposit doubled up to ₹10,000</p>
+        </div>
+
+        <div
+          onClick={onOpenLuckyWheel}
+          className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-3 shadow-xs cursor-pointer hover:shadow-sm active:scale-98 transition-all"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-xs">
+              🎡
+            </div>
+            <span className="text-xs font-bold text-slate-800">Lucky Spin</span>
+          </div>
+          <p className="text-[10px] text-[#768096]">Win iPhone 17 Pro & cash rewards</p>
+        </div>
+      </div>
+
+      {/* 4. Bet Records History (Clean White Card) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        {/* Header & Filter Pills */}
+        <div className="p-3.5 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-800">
+              Live Round Records
+            </span>
+            <span className="text-[10px] text-[#768096]">
+              {filteredItems.length} Rounds
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {[
+              { key: 'ALL', label: 'All Games' },
+              { key: 'WINGO', label: '🎲 Win Go 1Min' },
+              { key: 'AVIATOR', label: '✈️ Aviator' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setFilterGame(tab.key as any)}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${
+                  filterGame === tab.key
+                    ? 'bg-[#f95959] text-white shadow-xs'
+                    : 'bg-slate-100 text-[#768096] hover:bg-slate-200'
+                }`}
               >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-7 h-7 rounded-md flex items-center justify-center font-bold text-xs ${
-                      item.game === 'Win Go 1Min'
-                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
-                        : 'bg-rose-950 text-rose-400 border border-rose-800/60'
-                    }`}
-                  >
-                    {item.game === 'Win Go 1Min' ? 'WG' : 'AV'}
-                  </div>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
+        {/* Bets List */}
+        <div className="divide-y divide-slate-100 max-h-[360px] overflow-y-auto">
+          {filteredItems.length === 0 ? (
+            <div className="p-6 text-center text-xs text-[#768096]">
+              No game rounds recorded in this filter.
+            </div>
+          ) : (
+            filteredItems.map((item) => (
+              <div key={item.id} className="p-3 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
+                    item.game === 'Aviator' ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'
+                  }`}>
+                    {item.game === 'Aviator' ? '✈️' : '🎲'}
+                  </div>
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-casino-num font-bold text-white">
-                        {item.game}
-                      </span>
-                      <span className="text-[10px] text-amber-300 font-casino-num">
-                        {item.selectionOrDetail}
-                      </span>
-                    </div>
-                    <span className="text-[9px] text-slate-500 font-casino-num block">
-                      {new Date(item.timestamp).toLocaleTimeString('en-IN')} · Stake: {formatINR(item.stake)}
+                    <span className="font-bold text-slate-800 block text-[11px]">
+                      {item.game}
+                    </span>
+                    <span className="text-[9px] text-[#768096] font-mono block">
+                      {item.selectionOrDetail}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div
-                    className={`font-casino-num font-black text-xs ${
-                      isWon
-                        ? 'text-emerald-400'
-                        : isPending
-                        ? 'text-amber-400'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    {isWon
+                  <span className={`font-mono font-black text-xs block ${
+                    item.status === 'WON'
+                      ? 'text-emerald-600'
+                      : item.status === 'LOST'
+                      ? 'text-rose-500'
+                      : 'text-amber-500'
+                  }`}>
+                    {item.status === 'WON'
                       ? `+${formatINR(item.payout)}`
-                      : isPending
-                      ? 'IN FLIGHT'
-                      : `-${formatINR(item.stake)}`}
-                  </div>
-                  <span
-                    className={`text-[8px] font-casino-num font-black px-1.5 py-0.2 rounded uppercase ${
-                      isWon
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60'
-                        : isPending
-                        ? 'bg-amber-950 text-amber-300 border border-amber-800/60'
-                        : 'bg-slate-900 text-slate-500'
-                    }`}
-                  >
-                    {item.status}
+                      : item.status === 'LOST'
+                      ? `-${formatINR(item.stake)}`
+                      : 'In Round'}
+                  </span>
+                  <span className="text-[9px] text-[#768096] font-mono block">
+                    Stake: {formatINR(item.stake)}
                   </span>
                 </div>
               </div>
-            );
-          })
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

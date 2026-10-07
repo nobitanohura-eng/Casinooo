@@ -91,10 +91,7 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({ accountId, onRef
   const days1to6 = rewards.filter((r) => r.day <= 6);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#130b24] via-[#0d0918] to-[#07050d] border border-amber-500/40 p-3.5 sm:p-4 shadow-[0_4px_30px_rgba(245,158,11,0.2)]">
-      {/* Ambient Radial Lighting */}
-      <div className="absolute -top-16 -right-16 w-44 h-44 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-3.5 sm:p-4 shadow-sm text-slate-800">
 
       {/* Celebratory Flying Coins / Confetti Shower Overlay */}
       {showCelebration && (
@@ -120,25 +117,25 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({ accountId, onRef
       )}
 
       {/* Header: Title, Streak Pill & Rules */}
-      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 border-b border-slate-800/80 pb-2.5">
+      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 border-b border-slate-100 pb-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/30 border-t border-white/40">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/20 border-t border-white/40">
             <Trophy className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div>
-            <h4 className="font-casino-num font-black text-white text-xs sm:text-sm uppercase tracking-wide flex items-center gap-1.5">
+            <h4 className="font-casino-num font-black text-slate-800 text-xs sm:text-sm uppercase tracking-wide flex items-center gap-1.5">
               <span>DAILY CHEST VAULT</span>
-              <Sparkles className="w-3 h-3 text-amber-400" />
+              <Sparkles className="w-3 h-3 text-amber-500" />
             </h4>
-            <p className="text-[9px] text-amber-300/90 font-medium">
+            <p className="text-[9px] text-[#768096] font-medium">
               Check in daily for 7 days to unlock the Grand Mega Chest!
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 bg-amber-500/15 border border-amber-400/50 rounded-lg px-2 py-1 shadow-sm">
-          <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-          <span className="text-[10px] text-amber-300 font-casino-num font-black whitespace-nowrap">
+        <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 shadow-xs">
+          <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+          <span className="text-[10px] text-amber-700 font-casino-num font-black whitespace-nowrap">
             {currentDay}/7 Days
           </span>
         </div>
@@ -159,15 +156,15 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({ accountId, onRef
               }}
               className={`relative rounded-xl p-2 flex flex-col items-center justify-between text-center transition-all duration-300 select-none ${
                 isCompleted
-                  ? 'bg-gradient-to-b from-[#0a2318] to-[#04120c] border border-emerald-500/60 shadow-md shadow-emerald-950/40'
+                  ? 'bg-emerald-50 border border-emerald-300 shadow-xs'
                   : isReady
-                  ? 'bg-gradient-to-b from-[#2b1742] via-[#210f36] to-[#120722] border-2 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] cursor-pointer active:scale-95 animate-pulse'
-                  : 'bg-[#0a0714] border border-slate-800/80 opacity-75'
+                  ? 'bg-amber-50 border-2 border-amber-400 shadow-md cursor-pointer active:scale-95 animate-pulse'
+                  : 'bg-slate-50 border border-slate-200 opacity-80'
               }`}
             >
               {/* Day Header Tag */}
               <div className="w-full flex items-center justify-between text-[8px] font-casino-num font-black uppercase mb-1">
-                <span className={isCompleted ? 'text-emerald-300' : isReady ? 'text-amber-300' : 'text-slate-400'}>
+                <span className={isCompleted ? 'text-emerald-700' : isReady ? 'text-amber-800' : 'text-slate-500'}>
                   DAY {r.day}
                 </span>
                 {isCompleted ? (
