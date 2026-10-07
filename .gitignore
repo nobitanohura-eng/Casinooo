@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.local
+.env.*.local
+.vercel
+*.zip
+papa-transport-leads-mvp.zip
+mingit*
+dist
+build
+*.tsbuildinfo
