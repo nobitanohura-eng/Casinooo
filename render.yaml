@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: papa-transport-leads
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_PIN
+        value: "1234"
+      - key: ADMIN_PASSWORD
+        value: papa123
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        value: "onboarding@resend.dev"
+      - key: GLOBAL_EMAIL_PAUSED
+        value: "true"
+      - key: DAILY_SEND_LIMIT
+        value: "25"

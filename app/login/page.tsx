@@ -1,109 +1,129 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase-browser';
-import { Truck, Mail, ArrowRight, ShieldAlert } from 'lucide-react';
+import React, { useState } from 'react';
+import { Truck, ArrowRight, ShieldCheck, KeyRound, Sparkles } from 'lucide-react';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [pin, setPin] = useState('1234');
   const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('error') === 'not_allowed') {
-        setError('This email address is not in the authorized workspace allowlist.');
-      }
-    }
-  }, []);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleLogin(e?: React.FormEvent, directPin?: string) {
+    if (e) e.preventDefault();
     setBusy(true);
     setError('');
+
+    const pinToSubmit = directPin !== undefined ? directPin : pin;
+
     try {
-      const { error: signInErr } = await createClient().auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${location.origin}/auth/callback` },
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinToSubmit }),
       });
-      if (signInErr) throw signInErr;
-      setSent(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not send sign-in link');
-    } finally {
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed. Please check the PIN.');
+      }
+
+      // Successfully authenticated
+      window.location.href = '/';
+    } catch (err: any) {
+      setError(err?.message || 'Could not connect. Please try again.');
       setBusy(false);
     }
   }
 
   return (
     <main className="login-shell min-h-screen bg-[#f5f7fb] flex items-center justify-center p-4">
-      <div className="login-card bg-white border border-[#e7ebf2] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-lg">
-        <div className="login-brand flex items-center gap-3 mb-6">
-          <div className="brand-icon w-11 h-11 rounded-2xl bg-blue-50 text-[#3659e3] flex items-center justify-center">
-            <Truck size={23} />
+      <div className="login-card bg-white border border-[#e7ebf2] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-xl">
+        {/* Brand header */}
+        <div className="login-brand flex items-center gap-3.5 mb-6">
+          <div className="brand-icon w-12 h-12 rounded-2xl bg-blue-50 text-[#3659e3] flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
+            <Truck size={26} />
           </div>
           <div>
-            <b className="text-lg font-extrabold text-[#172033] block">Papa Transport</b>
-            <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase block">
+            <b className="text-xl font-extrabold text-[#172033] block tracking-tight">Papa Transport</b>
+            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase block">
               DELHI NCR LOGISTICS CRM
             </span>
           </div>
         </div>
 
+        {/* Heading */}
         <div className="login-heading mb-6">
-          <h1 className="text-2xl font-bold text-[#172033] tracking-tight">Welcome back</h1>
+          <h1 className="text-2xl font-black text-[#172033] tracking-tight">Owner Workspace</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Sign in with your email to manage business leads and approved outreach.
+            Chota Hathi (Tata Ace) local logistics management in Noida & Delhi NCR.
           </p>
         </div>
 
-        {sent ? (
-          <div className="login-success text-center py-6 space-y-3">
-            <div className="success-circle w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
-              <Mail size={24} />
-            </div>
-            <h2 className="text-lg font-bold text-[#172033]">Check your inbox</h2>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              A secure sign-in magic link has been sent to <strong>{email}</strong>. Only authorized emails in your allowlist can access the workspace.
-            </p>
+        {/* Quick Access for Papa */}
+        <div className="quick-access-box bg-blue-50/70 border border-blue-200/80 rounded-2xl p-4 mb-5">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-900 mb-1">
+            <Sparkles size={16} className="text-blue-600" />
+            <span>Papa Direct Access</span>
           </div>
-        ) : (
-          <form onSubmit={submit} className="login-form space-y-4">
-            <label className="block text-xs font-bold text-slate-700">
-              Email address
+          <p className="text-[11px] text-blue-700/80 mb-3">
+            Click below to instantly open your transport dashboard without typing.
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => handleLogin(undefined, '1234')}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#3659e3] hover:bg-[#2848c7] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-md transition-all active:scale-[0.99] disabled:opacity-50"
+          >
+            <span>{busy ? 'Opening…' : '🚚 Enter Transport Dashboard'}</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
+
+        <div className="relative flex items-center justify-center my-5">
+          <div className="border-t border-slate-200 w-full"></div>
+          <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            or enter pin
+          </span>
+        </div>
+
+        {/* PIN Form */}
+        <form onSubmit={handleLogin} className="login-form space-y-4">
+          <label className="block text-xs font-bold text-slate-700">
+            Security PIN
+            <div className="relative mt-1">
+              <KeyRound size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="owner@papatransport.com"
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 mt-1 border border-slate-200 rounded-xl outline-none focus:border-[#3659e3]"
+                type="password"
+                inputMode="numeric"
+                maxLength={8}
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="1234"
+                className="w-full text-center text-lg font-bold tracking-widest pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-[#3659e3] focus:ring-2 focus:ring-blue-100"
               />
-            </label>
+            </div>
+          </label>
 
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
-                <ShieldAlert size={16} className="shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+              <span className="font-medium">{error}</span>
+            </div>
+          )}
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#3659e3] hover:bg-[#2848c7] text-white text-xs font-bold rounded-xl shadow-sm transition-colors disabled:opacity-50"
-            >
-              <span>{busy ? 'Sending link…' : 'Send secure sign-in link'}</span>
-              <ArrowRight size={16} />
-            </button>
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors disabled:opacity-50"
+          >
+            <ShieldCheck size={16} />
+            <span>{busy ? 'Verifying…' : 'Unlock with PIN'}</span>
+          </button>
 
-            <p className="privacy-note text-[11px] text-slate-400 text-center leading-relaxed pt-2">
-              Private small-business workspace. Passwordless and secured by Supabase Auth.
-            </p>
-          </form>
-        )}
+          <p className="privacy-note text-[11px] text-slate-400 text-center leading-relaxed pt-2">
+            Default PIN is <strong>1234</strong>. Zero external accounts needed. Works directly on Render & mobile.
+          </p>
+        </form>
       </div>
     </main>
   );

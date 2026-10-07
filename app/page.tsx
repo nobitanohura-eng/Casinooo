@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase-browser';
 import Navbar, { TabType } from '@/components/Navbar';
 import DashboardTab from '@/components/DashboardTab';
 import LeadsTab from '@/components/LeadsTab';
@@ -170,9 +169,10 @@ export default function Home() {
 
   useEffect(() => {
     refreshAll();
-    createClient()
-      .auth.getUser()
-      .then(({ data }) => setUserEmail(data.user?.email || ''));
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => setUserEmail(data.user?.email || 'owner@papatransport.com'))
+      .catch(() => {});
   }, [refreshAll]);
 
   // Lead CRUD Actions
@@ -417,7 +417,7 @@ export default function Home() {
   }
 
   async function handleLogout() {
-    await createClient().auth.signOut();
+    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     location.href = '/login';
   }
 
