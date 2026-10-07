@@ -17,6 +17,8 @@ export function middleware(request: NextRequest) {
     '/api/optout',
     '/unsubscribe',
     '/api/webhooks/resend',
+    '/api/sms/pair/complete',
+    '/api/sms/device',
   ];
   const isPublic = publicPaths.some((p) => request.nextUrl.pathname.startsWith(p));
 

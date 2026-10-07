@@ -355,8 +355,9 @@ export async function runAiLeadScout(options: ScoutOptions = {}) {
       rawCandidates = generateLocalNcrLeads(count, options.category, options.target_area);
     }
   } else {
-    // Pure zero-API-key intelligent built-in generator
-    rawCandidates = generateLocalNcrLeads(count, options.category, options.target_area);
+    // Pure zero-API-key intelligent built-in generator (oversample to guarantee requested count after dedupe)
+    const poolSize = Math.max(count * 3, count + 12);
+    rawCandidates = generateLocalNcrLeads(poolSize, options.category, options.target_area);
   }
 
   // 2. Fetch existing records for duplicate check
@@ -368,6 +369,9 @@ export async function runAiLeadScout(options: ScoutOptions = {}) {
   let skippedDuplicates = 0;
 
   for (const candidate of rawCandidates) {
+    if (savedLeads.length >= count) {
+      break;
+    }
     const normPhone = normalizePhone(candidate.phone);
     const normEmail = normalizeEmail(candidate.email);
 

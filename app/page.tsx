@@ -8,11 +8,13 @@ import CampaignsTab from '@/components/CampaignsTab';
 import FollowupsTab from '@/components/FollowupsTab';
 import ActivityTab from '@/components/ActivityTab';
 import SettingsTab from '@/components/SettingsTab';
+import SmsGatewayTab from '@/components/SmsGatewayTab';
 import LeadModal from '@/components/LeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import CsvImportModal from '@/components/CsvImportModal';
 import SendConfirmModal from '@/components/SendConfirmModal';
 import AiScoutModal from '@/components/AiScoutModal';
+import AiImportModal from '@/components/AiImportModal';
 import { Lead, DashboardMetrics, EmailDraft, FollowUp, ActivityLog, AppSettings } from '@/lib/types';
 
 export default function Home() {
@@ -62,6 +64,7 @@ export default function Home() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [sendModalLead, setSendModalLead] = useState<Lead | null>(null);
   const [isAiScoutOpen, setIsAiScoutOpen] = useState(false);
+  const [isAiImportOpen, setIsAiImportOpen] = useState(false);
 
   // Common API helper
   async function apiFetch(url: string, options?: RequestInit) {
@@ -491,7 +494,21 @@ export default function Home() {
               setIsAddModalOpen(true);
             }}
             onOpenImportModal={() => setIsImportModalOpen(true)}
+            onOpenAiImport={() => setIsAiImportOpen(true)}
             onOpenAiScout={() => setIsAiScoutOpen(true)}
+            onClearMockLeads={async () => {
+              if (!confirm('Are you sure you want to remove all dummy / sample leads from your CRM? Real and AI leads will stay.')) return;
+              setBusy(true);
+              try {
+                const res = await apiFetch('/api/leads/clear-mock', { method: 'POST' });
+                setNotice(res.message);
+                await refreshAll();
+              } catch (err: any) {
+                setError(err.message);
+              } finally {
+                setBusy(false);
+              }
+            }}
             onExportCsv={() => {
               window.open(
                 `/api/leads/export?status=${statusFilter}&category=${categoryFilter}`,
@@ -532,6 +549,10 @@ export default function Home() {
             onSelectLead={(lead) => setSelectedLead(lead)}
             busy={busy}
           />
+        )}
+
+        {currentTab === 'sms' && (
+          <SmsGatewayTab />
         )}
 
         {currentTab === 'activity' && (
@@ -590,6 +611,12 @@ export default function Home() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImportSuccess={() => refreshAll()}
+      />
+
+      <AiImportModal
+        isOpen={isAiImportOpen}
+        onClose={() => setIsAiImportOpen(false)}
+        onImportComplete={() => refreshAll()}
       />
 
       <SendConfirmModal

@@ -155,6 +155,13 @@ export interface AppSettings {
     service_area: string;
     vehicle_type: string;
   };
+  email_config?: {
+    provider?: 'gmail' | 'resend' | 'none';
+    gmail_user?: string;
+    gmail_app_password?: string;
+    resend_api_key?: string;
+    resend_from_email?: string;
+  };
 }
 
 export interface DashboardMetrics {
@@ -172,3 +179,101 @@ export interface DashboardMetrics {
   recentActivity: ActivityLog[];
   weeklyActivity: { day: string; count: number; date: string }[];
 }
+
+// SMS Gateway & Android SIM Companion Types
+export type SmsJobStatus =
+  | 'queued'
+  | 'claimed'
+  | 'sent'
+  | 'delivered'
+  | 'failed'
+  | 'unknown';
+
+export interface SmsDevice {
+  id: string;
+  device_name: string;
+  device_model: string;
+  phone_number: string;
+  pairing_code?: string | null;
+  pairing_code_expires_at?: string | null;
+  auth_token_hash: string;
+  status: 'online' | 'offline' | 'revoked';
+  paired_at: string;
+  last_seen_at: string;
+  battery_level: number;
+  is_charging: boolean;
+  selected_sim_slot: number; // 0 for SIM 1, 1 for SIM 2
+  sim_carrier?: string | null;
+  sim_count: number;
+  app_version?: string | null;
+}
+
+export interface SmsJob {
+  id: string;
+  lead_id: string;
+  lead_company_name: string;
+  recipient_phone: string;
+  message_text: string;
+  status: SmsJobStatus;
+  device_id: string | null;
+  sim_slot: number;
+  idempotency_key: string;
+  created_at: string;
+  claimed_at: string | null;
+  sent_at: string | null;
+  delivered_at: string | null;
+  failed_at: string | null;
+  error_code: string | null;
+  error_message: string | null;
+  retry_count: number;
+  max_retries: number;
+  requires_manual_approval: boolean;
+  approved_at: string | null;
+}
+
+export interface SmsSettings {
+  enabled: boolean;
+  daily_limit: number;
+  sent_today: number;
+  min_delay_seconds: number;
+  followup_mode: 'email_only' | 'sms_only' | 'email_then_sms' | 'manual_approval_sms' | 'auto_sms';
+  day0_channel: 'email' | 'sms';
+  day2_delay_days: number;
+  day4_delay_days: number;
+  dlt_disclaimer_acknowledged: boolean;
+  test_phone_number?: string | null;
+}
+
+export interface SmsTemplate {
+  id: string;
+  name: string;
+  language: 'hinglish' | 'hindi' | 'english';
+  category: string;
+  template_text: string;
+}
+
+export interface ParsedAiLead {
+  company_name: string;
+  contact_name: string | null;
+  phone: string | null;
+  email: string | null;
+  category: string;
+  address: string | null;
+  city: string;
+  route_area: string;
+  vehicle_requirement: string;
+  frequency: string;
+  estimated_value: number;
+  notes: string | null;
+  is_duplicate?: boolean;
+  duplicate_reason?: string;
+  confidence?: 'high' | 'medium' | 'low';
+}
+
+export interface AiImportResult {
+  total_found: number;
+  valid_count: number;
+  duplicate_count: number;
+  leads: ParsedAiLead[];
+}
+

@@ -6,13 +6,14 @@ import {
   Users,
   Mail,
   CalendarClock,
+  Smartphone,
   Activity,
   Settings,
   Truck,
   LogOut,
 } from 'lucide-react';
 
-export type TabType = 'dashboard' | 'leads' | 'campaigns' | 'followups' | 'activity' | 'settings';
+export type TabType = 'dashboard' | 'leads' | 'campaigns' | 'followups' | 'sms' | 'activity' | 'settings';
 
 interface NavbarProps {
   currentTab: TabType;
@@ -58,6 +59,12 @@ export default function Navbar({
       icon: CalendarClock,
       badge: followupsDueCount > 0 ? followupsDueCount : undefined,
       badgeAlert: followupsDueCount > 0,
+    },
+    {
+      id: 'sms' as TabType,
+      label: 'SMS Gateway',
+      hindi: 'SIM Mobile SMS',
+      icon: Smartphone,
     },
     {
       id: 'activity' as TabType,

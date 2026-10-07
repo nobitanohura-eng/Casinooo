@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { requireUser } from '@/lib/auth';
 import { adminDb } from '@/lib/admin';
 import { getAppSettings, checkDailySendLimit } from '@/lib/settings';
 import { isEmailSuppressed } from '@/lib/suppression';
 import { logActivity } from '@/lib/activity';
 import { formatEmailBodyToHtml } from '@/lib/email-templates';
+import { sendEmailMessage } from '@/lib/email-sender';
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const auth = await requireUser();
@@ -97,41 +97,35 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     if (attemptErr) throw attemptErr;
 
-    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
-      await db
-        .from('send_attempts')
-        .update({ status: 'failed', error_message: 'Resend credentials missing' })
-        .eq('id', attemptRecord.id);
-
-      return NextResponse.json({ error: 'Email configuration incomplete.' }, { status: 503 });
-    }
-
     const baseUrl = (process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
     const optoutUrl = `${baseUrl}/api/optout/${draft.lead?.optout_token}`;
     const htmlContent = formatEmailBodyToHtml(draft.body, optoutUrl);
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const sendResult = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL,
+    // Dispatch via Gmail SMTP or Resend API
+    const sendResult = await sendEmailMessage({
       to: draft.recipient_email,
       subject: draft.subject,
       text: `${draft.body}\n\nUnsubscribe: ${optoutUrl}`,
       html: htmlContent,
-      headers: {
-        'List-Unsubscribe': `<${optoutUrl}>`,
-      },
+      unsubscribeUrl: optoutUrl,
     });
 
-    if (sendResult.error) {
+    if (!sendResult.ok) {
       await db
         .from('send_attempts')
-        .update({ status: 'failed', error_message: sendResult.error.message })
+        .update({ status: 'failed', error_message: sendResult.error || 'Failed to send' })
         .eq('id', attemptRecord.id);
 
-      return NextResponse.json({ error: sendResult.error.message }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: sendResult.error || 'Email dispatch failed.',
+          hint: 'Please configure Gmail User & App Password or Resend credentials in Settings.',
+        },
+        { status: 502 }
+      );
     }
 
-    const providerMessageId = sendResult.data?.id || `resend_${Date.now()}`;
+    const providerMessageId = sendResult.messageId || `${sendResult.provider}_${Date.now()}`;
     const sentAt = new Date().toISOString();
 
     await db.from('send_attempts').update({ status: 'sent', provider_message_id: providerMessageId }).eq('id', attemptRecord.id);

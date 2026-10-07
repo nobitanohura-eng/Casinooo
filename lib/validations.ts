@@ -102,4 +102,11 @@ export const settingsUpdateSchema = z.object({
     service_area: z.string().optional(),
     vehicle_type: z.string().optional(),
   }).optional(),
+  email_config: z.object({
+    provider: z.enum(['gmail', 'resend', 'none']).optional(),
+    gmail_user: z.string().optional().or(z.literal('')),
+    gmail_app_password: z.string().optional().or(z.literal('')),
+    resend_api_key: z.string().optional().or(z.literal('')),
+    resend_from_email: z.string().optional().or(z.literal('')),
+  }).optional(),
 });

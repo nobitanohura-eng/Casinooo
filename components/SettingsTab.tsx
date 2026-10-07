@@ -17,6 +17,10 @@ import {
   ExternalLink,
   Sparkles,
   Bot,
+  Smartphone,
+  Send,
+  Info,
+  Check,
 } from 'lucide-react';
 import { AppSettings } from '@/lib/types';
 
@@ -49,6 +53,73 @@ export default function SettingsTab({
   const [dailyLimit, setDailyLimit] = useState(settings?.daily_send_limit ?? 25);
   const [manualEmail, setManualEmail] = useState('');
   const [notice, setNotice] = useState('');
+
+  const [provider, setProvider] = useState<'gmail' | 'resend'>(
+    settings?.email_config?.provider === 'resend' ? 'resend' : 'gmail'
+  );
+  const [gmailUser, setGmailUser] = useState(settings?.email_config?.gmail_user || '');
+  const [gmailAppPass, setGmailAppPass] = useState(settings?.email_config?.gmail_app_password || '');
+  const [resendApiKey, setResendApiKey] = useState(settings?.email_config?.resend_api_key || '');
+  const [resendFromEmail, setResendFromEmail] = useState(settings?.email_config?.resend_from_email || '');
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [emailStatusMessage, setEmailStatusMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [showAppPassHelp, setShowAppPassHelp] = useState(false);
+
+  React.useEffect(() => {
+    if (settings?.email_config) {
+      if (settings.email_config.provider) {
+        setProvider(settings.email_config.provider === 'resend' ? 'resend' : 'gmail');
+      }
+      if (settings.email_config.gmail_user) setGmailUser(settings.email_config.gmail_user);
+      if (settings.email_config.gmail_app_password) setGmailAppPass(settings.email_config.gmail_app_password);
+      if (settings.email_config.resend_api_key) setResendApiKey(settings.email_config.resend_api_key);
+      if (settings.email_config.resend_from_email) setResendFromEmail(settings.email_config.resend_from_email);
+    }
+  }, [settings]);
+
+  async function handleSaveEmailSettings() {
+    setEmailStatusMessage(null);
+    try {
+      await onUpdateSettings({
+        email_config: {
+          provider,
+          gmail_user: gmailUser.trim(),
+          gmail_app_password: gmailAppPass.trim(),
+          resend_api_key: resendApiKey.trim(),
+          resend_from_email: resendFromEmail.trim(),
+        },
+      });
+      setNotice('Email configuration saved successfully.');
+    } catch (err: any) {
+      setEmailStatusMessage({ ok: false, text: err.message || 'Failed to save settings' });
+    }
+  }
+
+  async function handleSendTestEmail() {
+    setTestingEmail(true);
+    setEmailStatusMessage(null);
+    try {
+      const res = await fetch('/api/settings/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient: testEmailAddress.trim() || gmailUser.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEmailStatusMessage({ ok: false, text: data.error || 'Failed to send test email' });
+      } else {
+        setEmailStatusMessage({
+          ok: true,
+          text: `✓ ${data.message || 'Test email sent successfully! Please check your inbox or spam folder.'}`,
+        });
+      }
+    } catch (err: any) {
+      setEmailStatusMessage({ ok: false, text: err.message || 'Network error while sending test email' });
+    } finally {
+      setTestingEmail(false);
+    }
+  }
 
   const currentPaused = settings?.global_email_paused ?? true;
 
@@ -196,26 +267,183 @@ export default function SettingsTab({
           </div>
         </div>
 
-        {/* Resend Provider Configuration */}
-        <div className="bg-white border border-[#e7ebf2] rounded-2xl p-5 shadow-sm space-y-3">
-          <div className="font-bold text-sm text-[#172033] flex items-center gap-2">
-            <Mail size={16} className="text-[#3659e3]" />
-            <span>Verified Resend Sending Address</span>
-          </div>
-          <p className="text-xs text-slate-500">
-            Emails are delivered through Resend using the authenticated domain configured in your environment.
-          </p>
-
-          <div className="p-3 bg-slate-50 rounded-xl text-xs space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Sending Address:</span>
-              <strong className="text-slate-800">{resendInfo.fromEmail}</strong>
+        {/* Email Sending Configuration & Live Tester */}
+        <div className="bg-white border border-[#e7ebf2] rounded-2xl p-5 shadow-sm space-y-4 md:col-span-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div className="font-bold text-sm text-[#172033] flex items-center gap-2">
+                <Mail size={16} className="text-[#3659e3]" />
+                <span>Outreach Email Gateway Configuration (Gmail / Resend)</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Send genuine proposal emails from your own Gmail or an authenticated domain.
+              </p>
             </div>
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-slate-400">API Key Configured:</span>
-              <span className={`font-bold ${resendInfo.configured ? 'text-emerald-600' : 'text-amber-600'}`}>
-                {resendInfo.configured ? 'Yes (Server-side)' : 'Pending environment setup'}
-              </span>
+
+            {/* Provider Switcher */}
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setProvider('gmail')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  provider === 'gmail'
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Personal Gmail (SMTP)
+              </button>
+              <button
+                type="button"
+                onClick={() => setProvider('resend')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  provider === 'resend'
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Resend API
+              </button>
+            </div>
+          </div>
+
+          {emailStatusMessage && (
+            <div
+              className={`p-3 rounded-xl text-xs flex items-center justify-between ${
+                emailStatusMessage.ok
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}
+            >
+              <span>{emailStatusMessage.text}</span>
+              <button onClick={() => setEmailStatusMessage(null)} className="font-bold px-1.5">
+                ✕
+              </button>
+            </div>
+          )}
+
+          {provider === 'gmail' ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Your Gmail Address:
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="e.g. yourname@gmail.com"
+                    value={gmailUser}
+                    onChange={(e) => setGmailUser(e.target.value)}
+                    className="w-full text-xs font-medium px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-bold text-slate-700">
+                      Google App Password (16 Letters):
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAppPassHelp(!showAppPassHelp)}
+                      className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      <Info size={12} />
+                      <span>{showAppPassHelp ? 'Hide guide' : 'Kaise banaye?'}</span>
+                    </button>
+                  </div>
+                  <input
+                    type="password"
+                    placeholder="16-character app password (e.g. abcd efgh ijkl mnop)"
+                    value={gmailAppPass}
+                    onChange={(e) => setGmailAppPass(e.target.value)}
+                    className="w-full text-xs font-medium px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              {showAppPassHelp && (
+                <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-blue-900 space-y-1.5 leading-relaxed">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <span>📌 Personal Gmail se email bhejne ke liye 1-minute setup:</span>
+                  </div>
+                  <ol className="list-decimal pl-4 space-y-1 text-[11px] text-blue-800">
+                    <li>
+                      Apne Google Account me jayein: <strong>myaccount.google.com/security</strong>
+                    </li>
+                    <li>
+                      <strong>2-Step Verification</strong> ON karein (agar pehle se ON nahi hai).
+                    </li>
+                    <li>
+                      Search box me type karein <strong>&quot;App passwords&quot;</strong> (ya Security me App passwords khole).
+                    </li>
+                    <li>
+                      App name me likhein <strong>&quot;Papa Transport&quot;</strong> aur &quot;Create&quot; button dabayein.
+                    </li>
+                    <li>
+                      Jo <strong>16-digit code</strong> (yellow box me) dikhega, usko copy karke yahan paste karein aur Save dabayein!
+                    </li>
+                  </ol>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Resend API Key:
+                </label>
+                <input
+                  type="password"
+                  placeholder="re_xxxxxxxxxxxxxxxxx"
+                  value={resendApiKey}
+                  onChange={(e) => setResendApiKey(e.target.value)}
+                  className="w-full text-xs font-medium px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Verified Sender Address:
+                </label>
+                <input
+                  type="email"
+                  placeholder="e.g. dispatch@papatransport.com"
+                  value={resendFromEmail}
+                  onChange={(e) => setResendFromEmail(e.target.value)}
+                  className="w-full text-xs font-medium px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleSaveEmailSettings}
+              className="px-4 py-2 bg-[#3659e3] hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5"
+            >
+              <Check size={14} />
+              <span>Save Email Settings</span>
+            </button>
+
+            {/* Test Email Trigger */}
+            <div className="flex items-center gap-2">
+              <input
+                type="email"
+                placeholder={gmailUser || 'Send test email to address...'}
+                value={testEmailAddress}
+                onChange={(e) => setTestEmailAddress(e.target.value)}
+                className="w-48 text-xs px-3 py-2 border border-slate-200 rounded-xl outline-none"
+              />
+              <button
+                type="button"
+                disabled={testingEmail || busy}
+                onClick={handleSendTestEmail}
+                className="px-3 py-2 bg-slate-800 hover:bg-black text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <Send size={13} className={testingEmail ? 'animate-spin' : ''} />
+                <span>{testingEmail ? 'Sending...' : 'Send Test Email'}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -311,45 +539,39 @@ export default function SettingsTab({
         </div>
       </div>
 
-      {/* 4. DISABLED SMS INTEGRATION SECTION (PREPARE, DO NOT FAKE) */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3 opacity-90">
+      {/* 4. ANDROID PHONE + SIM SMS GATEWAY */}
+      <div className="bg-white border border-[#e7ebf2] rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
               <MessageSquare size={16} />
             </div>
             <div>
               <div className="font-bold text-sm text-[#172033] flex items-center gap-2">
-                <span>Indian Commercial SMS Gateway (TRAI / DLT)</span>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
-                  Disabled / Not Configured
+                <span>Android Phone + SIM SMS Gateway</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  Ready & Integrated
                 </span>
               </div>
               <div className="text-xs text-slate-500">
-                Regulatory boundary for future commercial SMS outreach in Delhi NCR
+                Dispatches automated SMS follow-ups through your paired Android phone&apos;s physical SIM card
               </div>
             </div>
           </div>
-          <Lock size={18} className="text-slate-400" />
         </div>
 
-        <div className="p-4 bg-white border border-slate-200 rounded-xl text-xs text-slate-600 space-y-2 leading-relaxed">
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 space-y-2 leading-relaxed">
           <div className="font-semibold text-[#172033] flex items-center gap-1.5">
-            <AlertTriangle size={14} className="text-amber-500" />
-            <span>Why SMS is disabled in this release:</span>
+            <Smartphone size={14} className="text-blue-600" />
+            <span>How to use your phone as an SMS Gateway:</span>
           </div>
           <p>
-            Under Indian Telecom Regulatory Authority (TRAI) Telecom Commercial Communications Customer Preference Regulations (TCCCPR), any commercial B2B/B2C SMS requires:
+            You can pair any Android phone running our companion app. The web dashboard safely queues SMS jobs into the database, and your phone sends them via SIM 1 or SIM 2 with zero third-party SMS costs.
           </p>
-          <ul className="list-disc list-inside space-y-1 pl-2 text-slate-500">
-            <li>Enterprise entity registration on a certified DLT portal (e.g., Jio, Airtel, Vodafone-Idea, or BSNL).</li>
-            <li>Approved Sender Header / Sender ID (e.g., 6-character Alpha header).</li>
-            <li>Pre-registered and scrubbed content templates matching exact outreach wording.</li>
-            <li>Demonstrable verifiable commercial consent.</li>
-          </ul>
-          <p className="pt-1 text-[11px] text-slate-400 border-t border-slate-100">
-            <strong>Future Integration Boundary:</strong> Once DLT entity approval and template IDs are secured, a dedicated webhook/API connector to a licensed Indian SMS provider or an authorized local Android phone gateway can be safely plugged in here without exposing Android credentials.
-          </p>
+          <div className="pt-2 flex items-center gap-2">
+            <span className="text-[11px] text-slate-500">Go to the dedicated tab in the left sidebar / bottom nav:</span>
+            <strong className="text-blue-600 text-xs">📱 SMS Gateway</strong>
+          </div>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { getAppSettings, updateAppSetting, checkDailySendLimit } from '@/lib/set
 import { settingsUpdateSchema } from '@/lib/validations';
 import { suppressEmail } from '@/lib/suppression';
 import { logActivity } from '@/lib/activity';
+import { getEmailConfig } from '@/lib/email-sender';
 
 export async function GET() {
   const auth = await requireUser();
@@ -21,21 +22,22 @@ export async function GET() {
       .order('created_at', { ascending: false })
       .limit(50);
 
+    const emailConfig = await getEmailConfig();
+
     return NextResponse.json({
       settings,
       limits,
       suppressions: suppressions || [],
       suppressionsCount: suppCount || 0,
+      emailConfig,
       resend: {
-        configured: Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL),
-        fromEmail: process.env.RESEND_FROM_EMAIL || 'Not configured in environment',
+        configured: emailConfig.provider === 'resend',
+        fromEmail: emailConfig.fromEmail || 'Not configured',
       },
       sms: {
-        enabled: false,
-        reason:
-          'SMS integration is disabled. Indian commercial SMS requires TRAI/DLT registration, approved sender headers, and verified scrubbed consent templates.',
-        futureBoundary:
-          'Future integration should hook into a compliant DLT provider (e.g. Jio / Airtel / SMSHorizon) or an authorized local Android phone gateway app.',
+        enabled: true,
+        reason: 'Android companion phone gateway is available in the SMS Gateway tab.',
+        futureBoundary: 'Paired Android phone sends SMS using physical SIM card.',
       },
     });
   } catch (e) {
@@ -93,8 +95,18 @@ export async function PATCH(req: Request) {
       await updateAppSetting('company_profile', val.company_profile);
     }
 
+    if (val.email_config !== undefined) {
+      await updateAppSetting('smtp_config', val.email_config);
+      await logActivity({
+        action: 'settings_updated',
+        description: `Email configuration updated (provider: ${val.email_config.provider || 'custom'})`,
+        actor: auth.user.email || 'Owner',
+      });
+    }
+
     const updated = await getAppSettings();
-    return NextResponse.json({ success: true, settings: updated });
+    const updatedEmailConfig = await getEmailConfig();
+    return NextResponse.json({ success: true, settings: updated, emailConfig: updatedEmailConfig });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Failed to update settings' },

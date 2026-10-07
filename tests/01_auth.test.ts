@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { requireUser } from '@/lib/auth';
 
 describe('1. Authentication and Authorization', () => {
@@ -6,6 +6,10 @@ describe('1. Authentication and Authorization', () => {
     delete process.env.TEST_AUTH_REJECT;
     delete process.env.TEST_USER_EMAIL;
     process.env.APP_ALLOWED_EMAILS = 'owner@papatransport.com,driver@papatransport.com';
+  });
+
+  afterEach(() => {
+    delete process.env.TEST_AUTH_REJECT;
   });
 
   it('rejects unauthenticated requests with 401', async () => {

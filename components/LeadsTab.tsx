@@ -36,7 +36,9 @@ interface LeadsTabProps {
   onSelectLead: (lead: Lead) => void;
   onOpenAddModal: () => void;
   onOpenImportModal: () => void;
+  onOpenAiImport?: () => void;
   onOpenAiScout?: () => void;
+  onClearMockLeads?: () => void;
   onExportCsv: () => void;
   onBulkAction: (action: string, leadIds: string[], status?: string) => Promise<void>;
   busy: boolean;
@@ -56,7 +58,9 @@ export default function LeadsTab({
   onSelectLead,
   onOpenAddModal,
   onOpenImportModal,
+  onOpenAiImport,
   onOpenAiScout,
+  onClearMockLeads,
   onExportCsv,
   onBulkAction,
   busy,
@@ -100,6 +104,16 @@ export default function LeadsTab({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {onClearMockLeads && (
+            <button
+              onClick={onClearMockLeads}
+              title="Remove dummy sample leads"
+              className="flex items-center gap-1.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl shadow-sm transition-colors"
+            >
+              <span>🧹 Clear Mock Leads</span>
+            </button>
+          )}
+
           <button
             onClick={onExportCsv}
             title="Download CSV"
@@ -111,11 +125,20 @@ export default function LeadsTab({
 
           <button
             onClick={onOpenImportModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e7ebf2] hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#e7ebf2] hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-sm transition-colors"
           >
             <Upload size={15} />
-            <span>Import CSV</span>
+            <span>CSV</span>
           </button>
+
+          {onOpenAiImport && (
+            <button
+              onClick={onOpenAiImport}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl shadow-sm transition-all"
+            >
+              <span>📋 Import .md / Table</span>
+            </button>
+          )}
 
           {onOpenAiScout && (
             <button

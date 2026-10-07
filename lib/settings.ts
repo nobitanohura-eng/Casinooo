@@ -37,6 +37,7 @@ export async function getAppSettings(): Promise<AppSettings> {
       global_email_paused: isPaused,
       daily_send_limit: typeof settings.daily_send_limit === 'number' ? settings.daily_send_limit : 25,
       company_profile: (settings.company_profile as AppSettings['company_profile']) || DEFAULT_SETTINGS.company_profile,
+      email_config: (settings.smtp_config as AppSettings['email_config']) || undefined,
     };
   } catch {
     return DEFAULT_SETTINGS;
